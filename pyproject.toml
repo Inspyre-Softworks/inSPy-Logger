@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "inspy_logger"
-version = "2.0.0-alpha.2"
+name = "inspy-logger"
+version = "2.0.0-alpha.3"
 description = "Colorable, scalable logger for CLI"
-authors = ["taylor <tayjaybabee@gmail.com>"]
+authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8.2"
+python = "^3.6.3"
 colorlog = "^4.2.1"
 setuptools-autover = "^1.0.2"
 

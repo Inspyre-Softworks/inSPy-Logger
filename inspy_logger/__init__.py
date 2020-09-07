@@ -34,7 +34,7 @@ class InspyLogger(Logger):
 
        """
 
-    def adjust_level(self, l_lvl='info', silence_notif=False):
+    def adjust_level(self, l_lvl="info", silence_notif=False):
         """
 
         Adjust the level of the logger associated with this instance.
@@ -59,14 +59,18 @@ class InspyLogger(Logger):
         _caller = inspect.stack()[1][3]
 
         if self.last_lvl_change_by is None:
-            _log.info('Setting logger level for first time')
-            _log.debug('Signing in')
-            self.last_lvl_change_by = 'Starting Logger'
+            _log.info("Setting logger level for first time")
+            _log.debug("Signing in")
+            self.last_lvl_change_by = "Starting Logger"
         else:
             if not silence_notif:
-                _log.info(f'{_caller} is changing logger level from {self.l_lvl} to {l_lvl}')
-                _log.info(f'Last level change was implemented by: {self.last_lvl_change_by}')
-                _log.info(f'Updating last level changer')
+                _log.info(
+                    f"{_caller} is changing logger level from {self.l_lvl} to {l_lvl}"
+                )
+                _log.info(
+                    f"Last level change was implemented by: {self.last_lvl_change_by}"
+                )
+                _log.info(f"Updating last level changer")
 
             self.last_lvl_change_by = _caller
 
@@ -118,7 +122,11 @@ class InspyLogger(Logger):
         self.device.info(f"Logger started for %s" % self.root_name)
         self.started = True
 
-        return self.device
+        self.manifest += 'root': {
+
+        }
+
+        return self
 
     def __init__(self, device_name, log_level):
         """
@@ -144,3 +152,4 @@ class InspyLogger(Logger):
         self.started = False
         self.last_lvl_change_by = None
         self.device = None
+        self.manifest = {}
