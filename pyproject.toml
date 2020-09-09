@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "2.0.0-alpha.4"
+version = "2.0.0-alpha.5"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
@@ -8,6 +8,7 @@ authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 python = "^3.6.3"
 colorlog = "^4.2.1"
 setuptools-autover = "^1.0.2"
+luddite = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 
