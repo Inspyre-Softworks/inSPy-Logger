@@ -16,3 +16,5 @@
 - You just **DO WHAT THE FUCK YOU WANT TO**.
 - You **don't** blame me for **shit**. _I don't care_ how much smoke your hard-drive spewed out.
 - If someone else did what the fuck they wanted to and you're _**triggered**_ I'm **not** responsible.
+
+                              Contact <dev.null@inspyre.tech> with any complaints.
