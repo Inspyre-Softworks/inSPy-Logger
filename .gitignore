@@ -130,3 +130,4 @@ dmypy.json
 
 # Add personal notebooks folder
 notebooks/
+.vscode/settings.json
