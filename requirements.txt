@@ -1,0 +1,4 @@
+colorama
+colorlog
+setuptools-autover
+luddite
