@@ -1,8 +1,41 @@
 # Changelog
 
-## [v2.0-alpha.2](https://github.com/Inspyre-Softworks/inspy-logger/tree/v2.0-alpha.2) (2020-09-03)
+## [2.0.0a5](https://github.com/Inspyre-Softworks/inSPy-Logger/tree/2.0.0a5) (2020-09-09)
 
-[Full Changelog](https://github.com/Inspyre-Softworks/inspy-logger/compare/3faf603aeb69f35fb0eefb1e394aadd2b80618ef...v2.0-alpha.2)
+[Full Changelog](https://github.com/Inspyre-Softworks/inSPy-Logger/compare/v2.0.0-alpha.5...2.0.0a5)
+
+**Fixed bugs:**
+
+- Exception due to incomplete expression in \_\_init\_\_.py [\#1](https://github.com/Inspyre-Softworks/inSPy-Logger/issues/1)
+
+**Closed issues:**
+
+- \[FEAT\] Give inSPy-Logger the ability to output its own version [\#6](https://github.com/Inspyre-Softworks/inSPy-Logger/issues/6)
+- \[DEV::BUG\] Add missing dependency: luddite [\#5](https://github.com/Inspyre-Softworks/inSPy-Logger/issues/5)
+
+**Merged pull requests:**
+
+- V2.0 alpha.5 [\#4](https://github.com/Inspyre-Softworks/inSPy-Logger/pull/4) ([tayjaybabee](https://github.com/tayjaybabee))
+
+## [v2.0.0-alpha.5](https://github.com/Inspyre-Softworks/inSPy-Logger/tree/v2.0.0-alpha.5) (2020-09-09)
+
+[Full Changelog](https://github.com/Inspyre-Softworks/inSPy-Logger/compare/v2.0.0-alpha.4...v2.0.0-alpha.5)
+
+## [v2.0.0-alpha.4](https://github.com/Inspyre-Softworks/inSPy-Logger/tree/v2.0.0-alpha.4) (2020-09-09)
+
+[Full Changelog](https://github.com/Inspyre-Softworks/inSPy-Logger/compare/v2.0.0a.3...v2.0.0-alpha.4)
+
+## [v2.0.0a.3](https://github.com/Inspyre-Softworks/inSPy-Logger/tree/v2.0.0a.3) (2020-09-07)
+
+[Full Changelog](https://github.com/Inspyre-Softworks/inSPy-Logger/compare/v2.0-alpha.2...v2.0.0a.3)
+
+**Implemented enhancements:**
+
+- Merge CI Integration w/ Master [\#2](https://github.com/Inspyre-Softworks/inSPy-Logger/pull/2) ([tayjaybabee](https://github.com/tayjaybabee))
+
+## [v2.0-alpha.2](https://github.com/Inspyre-Softworks/inSPy-Logger/tree/v2.0-alpha.2) (2020-09-03)
+
+[Full Changelog](https://github.com/Inspyre-Softworks/inSPy-Logger/compare/3faf603aeb69f35fb0eefb1e394aadd2b80618ef...v2.0-alpha.2)
 
 
 
