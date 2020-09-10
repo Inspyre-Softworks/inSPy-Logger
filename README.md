@@ -49,5 +49,6 @@ log.exception('This is an exception log entry!')
 
 If you run the code above you'll get output similar to this:
 
+![output1](https://github.com/Inspyre-Softworks/inSPy-Logger/blob/v2.0-alpha.6/examples/v2.0/output_screenies/v2.0.0a.6_screenie1.png)
 
 v2.0+ repository for inSPy-Logger
