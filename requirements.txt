@@ -2,3 +2,4 @@ colorama
 colorlog
 setuptools-autover
 luddite
+packaging
