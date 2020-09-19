@@ -1,37 +1,54 @@
-## Welcome to GitHub Pages
+# inSPy-Logger
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Inspyre-Softworks/inSPy-Logger/CI?label=CI&logo=github&logoColor=9cf&style=for-the-badge) 
+![Codacy grade](https://img.shields.io/codacy/grade/7171eec682c549a88dee0da9cc9b92b3?logo=codacy&logoColor=9cf&style=for-the-badge) 
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Inspyre-Softworks/inSPy-Logger?color=9cf&include_prereleases&label=Pre-Release&logo=pypi&logoColor=9cf&style=for-the-badge) 
+![PyPI](https://img.shields.io/pypi/v/inspy-logger?color=9cf&label=Latest&logo=pypi&logoColor=9cf&style=for-the-badge) 
+![GitHub issues](https://img.shields.io/github/issues/Inspyre-Softworks/inSPy-Logger?color=9cf&logo=github&logoColor=9cf&style=for-the-badge) 
+![PyPI - Format](https://img.shields.io/pypi/format/inSPy-Logger?logo=PyPi&style=for-the-badge)
 
-You can use the [editor on GitHub](https://github.com/Inspyre-Softworks/inSPy-Logger/edit/v2.0-alpha.6/docs/index.md) to maintain and preview the content for your website in Markdown files.
+## Installation
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Prerequisites:
 
-### Markdown
+**Platform/Env**:
+  * **Python**: ^3.6.3
+  * **PIP**: (_If you want to install via PIP, that is_)
+  
+**inSPy-Logger Runtime Dependencies**:
+  I am providing this list of dependencies for transparency and for instances where one would not be able to install inSPy-Logger via PyPi's package manager. It is **highly** recommended you use `python3 -m pip install inspy_logger==<ver>` to install inSPy-Logger 2.0+
+  
+  * [colorlog](https://pypi.org/project/colorlog) (^4.2.1)
+  * [setuptools-autover](https://pypi.org/project/setuptools-autover) = (^1.0.2)
+  * [luddite](https://pypi.org/project/luddite) = (^1.0.1)
+  * [packaging](https://pypi.org/project/packaging) = (^20.4)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Installation via Pip on Python 3.6.3+ (recommended method):
 
-```markdown
-Syntax highlighted code block
+- `$> python3 -m pip install inspy_logger==<version>`
 
-# Header 1
-## Header 2
-### Header 3
+#### Test out InspyLogger:
 
-- Bulleted
-- List
+```python3
 
-1. Numbered
-2. List
+import inspy_logger
 
-**Bold** and _Italic_ and `Code` text
+# Set up a log device object. The first parameter is the root loggers name, and the second is the debug level
+log_device = inspy_logger.InspyLogger('LogName', 'debug')
 
-[Link](url) and ![Image](src)
+# Start a running log from that device
+log = log_device.start()
+
+# Output our own logger lines:
+log.debug('This is a debug log entry')
+log.info('This is an info log entry')
+log.warning('This is a warning log entry!')
+log.error('This is an error log entry!')
+log.exception('This is an exception log entry!')
+
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+If you run the code above you'll get output similar to this:
 
-### Jekyll Themes
+![output1](https://github.com/Inspyre-Softworks/inSPy-Logger/blob/v2.0-alpha.6/examples/v2.0/output_screenies/v2.0.0a.6_screenie1.png)
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Inspyre-Softworks/inSPy-Logger/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+v2.0+ repository for inSPy-Logger
