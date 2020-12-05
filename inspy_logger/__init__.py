@@ -27,9 +27,9 @@ from inspy_logger.errors import ManifestEntryExistsError
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.0.0-beta.1"
+RELEASE = "2.0.1-beta.1"
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 ON_REPO = False
 
@@ -75,9 +75,14 @@ class InspyLogger(object):
             self.optional_update = None
             self.latest_stable = None
             self.latest_pr = None
-            self.offline = False
+            self.offline = None
 
-        def __instruction_feeder(self, instruct_group):
+        def __instruction_feeder(self, instruct_group:list):
+            """
+
+            Args:
+                instruct_group (list):
+            """
             for line in instruct_group:
                 print(line)
 
@@ -161,6 +166,7 @@ class InspyLogger(object):
 
         def get_latest(self):
             try:
+                self.offline = False
                 return get_version_pypi(self.package_name)
             except URLError:
                 statement = "Unable to connect to the internet, therefore I can't get remote version data"
@@ -174,7 +180,7 @@ class InspyLogger(object):
                 ver = "Unknown"
                 is_latest = False
 
-            return (ver, is_latest)
+            return ver, is_latest
 
     def __init__(self):
         self.loc_version = self.Version()  # 'loc' = short for 'local' for the curious
@@ -282,6 +288,21 @@ class InspyLogger(object):
                 for entry in self.manifest:
                     if entry['child_name'] == name:
                         return entry['log_object']
+
+        def clear_manifest(self, flush_to_disk:bool=False,
+                           fp_prefix=f"~/Inspyre-Softworks/InSPy-Logger/manifests/",
+                           file_name=f"{time.time()}.txt"):
+            log = getLogger(PKG_NAME + ".clear_manifest")
+            log.debug("Received request to clear the manifest")
+            if flush_to_disk:
+                log.debug("Received request to flush existing manifest to disk first")
+                with open(fp_prefix + file_name, "w+") as fp:
+                    fp.write(self.manifest)
+
+                log.info(f"Flushed manifest to {fp_prefix}{file_name}")
+
+            self.manifest = []
+            log.info("Cleared manifest!")
 
         def adjust_level(self, l_lvl="info", silence_notif=False):
             """
