@@ -240,17 +240,21 @@ class InspyLogger(object):
             existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
 
             if not existing:
+
+                c_log = getLogger(self.own_logger_root_name + f".{name}")
+
                 # Assemble a manifest entry.
                 manifest_entry = {
                     "child_name": name,
                     "caller_file": file_name,
                     "calling_line": line_no,
-                    "created_ts": ts
+                    "created_ts": ts,
+                    "log_object": c_log
                 }
 
                 self.manifest.append(manifest_entry)
 
-                return getLogger(self.own_logger_root_name + f".{name}")
+                return manifest_entry["log_object"]
 
             else:
                 raise ManifestEntryExistsError()
@@ -274,6 +278,10 @@ class InspyLogger(object):
 
             except ManifestEntryExistsError as e:
                 print(e.message)
+                # ToDo: Set up logger to tell user what's happening
+                for entry in self.manifest:
+                    if entry['child_name'] == name:
+                        return entry['log_object']
 
         def adjust_level(self, l_lvl="info", silence_notif=False):
             """
