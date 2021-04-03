@@ -22,7 +22,7 @@ copyright = '2020, Taylor-Jayde Blackstone'
 author = 'Taylor-Jayde Blackstone'
 
 # The full version, including alpha/beta/rc tags
-release = '2.0.0-beta.1'
+release = '2.1alpha10'
 
 
 # -- General configuration ---------------------------------------------------

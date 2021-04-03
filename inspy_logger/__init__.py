@@ -17,7 +17,6 @@ import pkg_resources
 from pkg_resources import DistributionNotFound
 from packaging import version as pkg_ver
 import sys
-import luddite
 from luddite import get_version_pypi, get_versions_pypi
 import time
 import inspect
@@ -27,11 +26,11 @@ from inspy_logger.errors import ManifestEntryExistsError
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.0.0-beta.1"
+RELEASE = "2.1-alpha.11"
 
-VERSION = "2.0.0"
+VERSION = "2.1"
 
-ON_REPO = False
+ON_REPO = True
 
 #####################################
 ######## VERSION DATA ABOVE! ########
