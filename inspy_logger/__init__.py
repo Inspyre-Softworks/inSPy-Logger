@@ -26,7 +26,7 @@ from inspy_logger.errors import ManifestEntryExistsError
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.1-alpha.11"
+RELEASE = "2.1-alpha.12"
 
 VERSION = "2.1"
 
