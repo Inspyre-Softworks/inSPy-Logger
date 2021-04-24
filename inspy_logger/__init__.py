@@ -232,9 +232,9 @@ class InspyLogger(object):
             line_no = frame[2]
             file_name = frame[1]
 
-            log.info(
+            log.debug(
                 f"Received request to add {name} to {self.root_name} by {frame_name} on line {line_no} of {file_name}.")
-            log.debug(f"Full Frame Info")
+            log.debug(f"Full Frame Info {frame}")
 
             existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
 
@@ -405,3 +405,4 @@ class InspyLogger(object):
             self.last_lvl_change_by = None
             self.device = None
             self.manifest = []
+            self.main_handler = None
