@@ -12,185 +12,201 @@ import logging, colorlog, inspect
 from colorlog import ColoredFormatter
 from logging import DEBUG, INFO, WARNING, getLogger, Logger
 
+from urllib.error import URLError
 import pkg_resources
 from pkg_resources import DistributionNotFound
 from packaging import version as pkg_ver
 import sys
-import luddite
 from luddite import get_version_pypi, get_versions_pypi
+import time
+import inspect
+from inspy_logger.errors import ManifestEntryExistsError
+
+#####################################
+## MOST ACCURATE VERSION INDICATOR ##
+#####################################
+
+RELEASE = "2.1-alpha.12"
+
+VERSION = "2.1"
+
+ON_REPO = True
+
+#####################################
+######## VERSION DATA ABOVE! ########
+#####################################
 
 pretty_name = "InSPy Logger"
-pkg_name = __package__
-py_ver = sys.version.split(" ")[0]
-
-
-def __get_version__(pkg_name):
-    try:
-        ver = pkg_resources.get_distribution(pkg_name).version
-    except DistributionNotFound as e:
-        statement = f"{str(e)}!"
-        print(statement)
-        ver = "Unknown"
-
-    is_latest = get_version_pypi(pkg_name) == ver
-
-    if is_latest:
-        update_statement = "You are up to date!"
-    else:
-        if pkg_ver.parse(str(ver)) < pkg_ver.parse(str(get_version_pypi(pkg_name))):
-            update_statement = f"You are running an older version of {pkg_name} than what is available. Consider upgrading."
-        else:
-            if ver in get_versions_pypi(pkg_name):
-                avail_ver = (
-                    ", a developmental version available via the PyPi repository"
-                )
-            else:
-                avail_ver = (
-                    ", a version that is NOT available via any online package manager"
-                )
-            update_statement = f"You are running a version of {pkg_name} that is newer than the latest version{avail_ver}"
-            update_statement += f"\nThe versions available from PyPi are: {', '.join(get_versions_pypi(pkg_name))}"
-
-    ver = str(f"{pretty_name} ({ver}) using Python {py_ver}\n" + f"{update_statement}")
-
-    return ver
-
-
-__VERSION__ = __get_version__(__package__)
+PKG_NAME = __package__
+PY_VER = sys.version.split(" ")[0]
 
 LEVELS = ["debug", "info", "warning"]
 """The names of the log output levels one can pick from"""
 
+latest_version = "Please start the InspyLogger class"
 
-class InspyLogger(Logger):
-    """
-    Starts a colored and formatted logging device for you.
+islatest = None
 
-    Starts a colored and formatted logging device for you. No need to worry about handlers, etc
 
-    Args:
+class InspyLogger(object):
+    class Version:
+        def __init__(self):
+            """
 
-        device_name (str): A string containing the name you'd like to choose for the root logger
+            This class helps manage the Version information for InspyLogger
 
-        log_level (str): A string containing the name of the level you'd like InspyLogger to be limited to. You can choose between:
+            """
 
-          - debug
-          - info
-          - warning
+            self.package_name = "InSPy-Logger"
+            """The name of the program"""
 
-    """
+            self.local = VERSION
+            """
+            The hard-coded version of the program. Unless this is changed by someone 
+            other than the developers 
+            """
 
-    def adjust_level(self, l_lvl="info", silence_notif=False):
-        """
+            self.needs_update = None
+            """
+            A variable 
+            """
 
-        Adjust the level of the logger associated with this instance.
+            self.optional_update = None
+            self.latest_stable = None
+            self.latest_pr = None
+            self.offline = False
 
-        Args:
-            l_lvl (str): A string containing the name of the level you'd like InspyLogger to be limited to. You can choose between:
+        def __instruction_feeder(self, instruct_group):
+            for line in instruct_group:
+                print(line)
 
-              - debug
-              - info
-              - warning
+        def is_up_to_date(self):
+            """
 
-            silence_notif (bool): Silence notifications (of 'info' level) when adjusting the logger's level. True for
-            no output and False to get these notifications.
+            Checks with PyPi to make sure you have the latest version.
 
-        Returns:
-            None
+            Returns:
+                This function will return three fields with varying values which are the following in respective order:
+                    - Is the local version at least up to date with the latest stable version found on PyPi? (In the form of a boolean)
+                    - A string that best matches the update status of InspyLogger. 
+                        
+                        The possible values are:
+                            - match: Matches the lastest stable version, not pre-release
+                            - pr_ver: The version number is a pre-release, as it's number is greater than the latest stable copy available on Pypi
+                            - not_released: The version number not only exceeds the latest stable version on PyPi but also the latest Pre-Release copy available on PyPi
+                            - outdated: The version number is less than the latest stable version available on PyPi
+                
+                One of three possible results:
+                
+                    - (True (bool), "match", VERSION): Indicates that this version number matches the copy on PyPi
+                    - (True (bool), "pr_ver", VERSION): Indicates that a "Pre-Release" version of InSPy-Logger is being used and matches a release found on PyPi
+                    - (False (bool), "not_released", VERSION): Indicates that this version number surpasses the highest available on PyPi
+                    - (False (bool), "outdated", VERSION):  Indicates that this version number is lower than the latest stable version on PyPi
+                   
+            """
 
-        """
+            latest = self.get_latest()
 
-        _log = getLogger(self.root_name)
+            if latest is None and self.offline:
+                self.latest_stable = ("Unknown", "Offline")
+                self.latest_pr = ("Unknown", "Offline")
+                self.needs_update = ("Unknown", "Offline")
+                self.optional_update = False
+            if not self.offline:
+                if self.needs_update is not None:
+                    if self.needs_update:
+                        notif_lines = [
+                            "An update for InSPy-Logger is available! Please update!",
+                            "You can update in one of the following ways:"
+                        ]
 
-        _caller = inspect.stack()[1][3]
+                        direct_update_instructions = [
+                            "    - Through the package itself:",
+                            "        from inspy_logger import InspyLogger, LogDevice",
+                            "        ",
+                            "        i_log = InspyLogger()",
+                            "        iLog_ver = i_log.Version()",
+                            "        iLog_ver.update(pr=False)",
+                        ]
 
-        if self.last_lvl_change_by is None:
-            _log.info("Setting logger level for first time")
-            _log.debug("Signing in")
-            self.last_lvl_change_by = "Starting Logger"
+                        pypi_update_instructions = [
+                            "    - Through your system's implementation of PIP",
+                            "        $> python3 -m pip install --update inspy_logger",
+                            "        OR",
+                            "        $> python3 -m pip install inspy_logger VER"
+                        ]
+
+                        border = str("*-*" * 20)
+                        mid_rule = str("-|-" * 20)
+
+                        # Notify the user through the console of an update being available.
+                        print(notif_lines)
+
+                        print(border)
+
+                        self.__instruction_feeder(direct_update_instructions)
+
+                        print(mid_rule)
+
+                        self.__instruction_feeder(pypi_update_instructions)
+
+                        print(border)
+
+                        return False, "outdated", self.local
+
+            # If the constant ON_REPO is Bool(False) we'll assume it's a pre-release
+            if not ON_REPO:
+                return True, "pr_ver", self.local
+
+        def get_latest(self):
+            try:
+                return get_version_pypi(self.package_name)
+            except URLError:
+                statement = "Unable to connect to the internet, therefore I can't get remote version data"
+                print(statement)
+                ver = "Unknown"
+                is_latest = False
+                self.offline = True
+                return None
+            except DistributionNotFound as e:
+                print(e)
+                ver = "Unknown"
+                is_latest = False
+
+            return (ver, is_latest)
+
+    def __init__(self):
+        self.loc_version = self.Version()  # 'loc' = short for 'local' for the curious
+        self.VERSION = self.loc_version.local
+
+    def __get_version(self, pkg_name):
+
+        if self.loc_version.is_up_to_date:
+            update_statement = "You are up to date!"
         else:
-            if not silence_notif:
-                _log.info(
-                    f"{_caller} is changing logger level from {self.l_lvl} to {l_lvl}"
-                )
-                _log.info(
-                    f"Last level change was implemented by: {self.last_lvl_change_by}"
-                )
-                _log.info(f"Updating last level changer")
+            if pkg_ver.parse(str(self.VERSION)) < pkg_ver.parse(str(get_version_pypi(pkg_name))):
+                update_statement = f"You are running an older version of {pkg_name} than what is available. Consider upgrading."
+            else:
+                if self.VERSION in get_versions_pypi(pkg_name):
+                    avail_ver = (
+                        ", a developmental version available via the PyPi repository"
+                    )
+                else:
+                    avail_ver = (
+                        ", a version that is NOT available via any online package manager"
+                    )
+                update_statement = f"You are running a version of {pkg_name} that is newer than the latest version{avail_ver}"
+                update_statement += f"\nThe versions available from PyPi are: {', '.join(get_versions_pypi(pkg_name))}"
 
-            self.last_lvl_change_by = _caller
+        ver = str(f"{pretty_name} ({self.VERSION}) using Python {PY_VER}\n" + f"{update_statement}")
 
-        self.l_lvl = l_lvl
+        print(ver)
 
-        if self.l_lvl == "debug":
-            _ = DEBUG
-        elif self.l_lvl == "info":
-            _ = INFO
-        elif self.l_lvl == "warn" or self.l_lvl == "warning":
-            _ = WARNING
+        return ver
 
-        _log.setLevel(_)
-
-    def start(self, mute=False, no_version=False):
+    class LogDevice(Logger):
         """
-
-        Start the actual logging instance and fill the attributes that __init__ creates.
-
-        Arguments:
-
-            mute (bool): Mute all output that starting the root-logger would produce. True: No output on executing start() | False: Do not suppress all output
-
-            no_version (bool): If you start the logger using the 'debug' log-level the logger will output its own version information. True: Suppress this output, no matter the log-level | False: Do no suppress this output
-
-        Note:
-            If you give the 'mute' parameter a value of `True` then the value of the `no_version` parameter will be ignored.
-
-        Returns:
-            None
-
-        """
-        if self.started:
-            self.device.warning(
-                "There already is a base logger for this program. I am using it to deliver this message."
-            )
-            return None
-
-        formatter = ColoredFormatter(
-            "%(bold_cyan)s%(asctime)-s%(reset)s%(log_color)s::%(name)s.%(module)-14s::%(levelname)-10s%(reset)s%("
-            "blue)s%(message)-s",
-            datefmt=None,
-            reset=True,
-            log_colors={
-                "DEBUG": "bold_cyan",
-                "INFO": "bold_green",
-                "WARNING": "bold_yellow",
-                "ERROR": "bold_red",
-                "CRITICAL": "bold_red",
-            },
-        )
-
-        self.device = logging.getLogger(self.root_name)
-        self.main_handler = logging.StreamHandler()
-        self.main_handler.setFormatter(formatter)
-        self.device.addHandler(self.main_handler)
-        self.adjust_level(self.l_lvl)
-        _log_ = logging.getLogger(self.root_name + ".InspyLoggerDevice")
-        if not mute:
-            _log_.info(f"Logger started for %s" % self.root_name)
-            if not no_version:
-                _log_.debug(
-                    f"\nLogger Info:\n" + ("*" * 35) + f"\n{__VERSION__}\n" + ("*" * 35)
-                )
-                self.started = True
-
-        # self.manifest += 'root': {
-
-        # }
-
-        return self.device
-
-    def __init__(self, device_name, log_level):
-        """
+        Starts a colored and formatted logging device for you.
 
         Starts a colored and formatted logging device for you. No need to worry about handlers, etc
 
@@ -198,19 +214,195 @@ class InspyLogger(Logger):
 
             device_name (str): A string containing the name you'd like to choose for the root logger
 
-            log_level (str): A string containing the name of the level you'd like InspyLogger to be limited to.
+            log_level (str): A string containing the name of the level you'd like InspyLogger to be limited to. You can choose between:
 
-            You can choose between:
-              - debug
-              - info
-              - warning
+            - debug
+            - info
+            - warning
+
         """
 
-        if log_level is None:
-            log_level = "info"
-        self.l_lvl = log_level.lower()
-        self.root_name = device_name
-        self.started = False
-        self.last_lvl_change_by = None
-        self.device = None
-        self.manifest = {}
+        def __add_child(self, name: str):
+
+            # Start a logger for this function
+            log = getLogger(self.own_logger_root_name + ".add_child")
+            ts = time.time()
+            frame = inspect.stack()[1]
+            frame_name = frame[3]
+            line_no = frame[2]
+            file_name = frame[1]
+
+            log.debug(
+                f"Received request to add {name} to {self.root_name} by {frame_name} on line {line_no} of {file_name}.")
+            log.debug(f"Full Frame Info {frame}")
+
+            existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
+
+            if not existing:
+                # Assemble a manifest entry.
+                manifest_entry = {
+                    "child_name": name,
+                    "caller_file": file_name,
+                    "calling_line": line_no,
+                    "created_ts": ts
+                }
+
+                self.manifest.append(manifest_entry)
+
+                return getLogger(self.root_name + f".{name}")
+
+            else:
+                raise ManifestEntryExistsError()
+
+        def add_child(self, name: str):
+            """
+
+            Create (and return) a child logger under the root log device. Also add it to the manifest to keep track of it.
+
+            Args:
+                name (str): The name you'd like to give the child logger
+
+            Returns:
+                getLogger: A child logging device.
+            
+            """
+
+            try:
+
+                return self.__add_child(name)
+
+            except ManifestEntryExistsError as e:
+                print(e.message)
+
+        def adjust_level(self, l_lvl="info", silence_notif=False):
+            """
+
+            Adjust the level of the logger associated with this instance.
+
+            Args:
+                l_lvl (str): A string containing the name of the level you'd like InspyLogger to be limited to. You can choose between:
+
+                - debug
+                - info
+                - warning
+
+                silence_notif (bool): Silence notifications (of 'info' level) when adjusting the logger's level. True for
+                no output and False to get these notifications.
+
+            Returns:
+                None
+
+            """
+
+            _log = getLogger(self.root_name)
+
+            _caller = inspect.stack()[1][3]
+
+            if self.last_lvl_change_by is None:
+                _log.info("Setting logger level for first time")
+                _log.debug("Signing in")
+                self.last_lvl_change_by = "Starting Logger"
+            else:
+                if not silence_notif:
+                    _log.info(
+                        f"{_caller} is changing logger level from {self.l_lvl} to {l_lvl}"
+                    )
+                    _log.info(
+                        f"Last level change was implemented by: {self.last_lvl_change_by}"
+                    )
+                    _log.info(f"Updating last level changer")
+
+                self.last_lvl_change_by = _caller
+
+            self.l_lvl = l_lvl
+
+            if self.l_lvl == "debug":
+                _ = DEBUG
+            elif self.l_lvl == "info":
+                _ = INFO
+            elif self.l_lvl == "warn" or self.l_lvl == "warning":
+                _ = WARNING
+
+            _log.setLevel(_)
+
+        def start(self, mute=False, no_version=False):
+            """
+
+            Start the actual logging instance and fill the attributes that __init__ creates.
+
+            Arguments:
+
+                mute (bool): Mute all output that starting the root-logger would produce. True: No output on executing start() | False: Do not suppress all output
+
+                no_version (bool): If you start the logger using the 'debug' log-level the logger will output its own version information. True: Suppress this output, no matter the log-level | False: Do no suppress this output
+
+            Note:
+                If you give the 'mute' parameter a value of `True` then the value of the `no_version` parameter will be ignored.
+
+            Returns:
+                None
+
+            """
+            if self.started:
+                self.device.warning(
+                    "There already is a base logger for this program. I am using it to deliver this message."
+                )
+                return None
+
+            formatter = ColoredFormatter(
+                "%(bold_cyan)s%(asctime)-s%(reset)s%(log_color)s::%(name)s.%(module)-14s::%(levelname)-10s%(reset)s%("
+                "blue)s%(message)-s",
+                datefmt=None,
+                reset=True,
+                log_colors={
+                    "DEBUG": "bold_cyan",
+                    "INFO": "bold_green",
+                    "WARNING": "bold_yellow",
+                    "ERROR": "bold_red",
+                    "CRITICAL": "bold_red",
+                },
+            )
+
+            self.device = logging.getLogger(self.root_name)
+            self.main_handler = logging.StreamHandler()
+            self.main_handler.setFormatter(formatter)
+            self.device.addHandler(self.main_handler)
+            self.adjust_level(self.l_lvl)
+            _log_ = logging.getLogger(self.own_logger_root_name)
+            if not mute:
+                _log_.info(f"Logger started for %s" % self.root_name)
+                if not no_version:
+                    _log_.debug(
+                        f"\nLogger Info:\n" + ("*" * 35) + f"\n{VERSION}\n" + ("*" * 35)
+                    )
+                    self.started = True
+
+            return self.device
+
+        def __init__(self, device_name, log_level):
+            """
+
+            Starts a colored and formatted logging device for you. No need to worry about handlers, etc
+
+            Args:
+
+                device_name (str): A string containing the name you'd like to choose for the root logger
+
+                log_level (str): A string containing the name of the level you'd like InspyLogger to be limited to.
+
+                You can choose between:
+                - debug
+                - info
+                - warning
+            """
+
+            if log_level is None:
+                log_level = "info"
+            self.l_lvl = log_level.lower()
+            self.root_name = device_name
+            self.own_logger_root_name = self.root_name + ".InspyLogger"
+            self.started = False
+            self.last_lvl_change_by = None
+            self.device = None
+            self.manifest = []
+            self.main_handler = None

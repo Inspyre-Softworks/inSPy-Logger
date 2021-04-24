@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>inspy_logger package &#8212; InspyLogger 2.0.0-beta.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="inspy_logger" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="inspy-logger-package">
+<h1>inspy_logger package<a class="headerlink" href="#inspy-logger-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-inspy_logger.manifest">
+<span id="inspy-logger-manifest-module"></span><h2>inspy_logger.manifest module<a class="headerlink" href="#module-inspy_logger.manifest" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-inspy_logger">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-inspy_logger" title="Permalink to this headline">¶</a></h2>
+<p>This package contains a class that will create and maintain a logging device for you</p>
+<dl class="field-list simple">
+<dt class="field-odd">returns</dt>
+<dd class="field-odd"><p>A colored and formatted logging device.</p>
+</dd>
+<dt class="field-even">rtype</dt>
+<dd class="field-even"><p>InspyLogger</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt id="inspy_logger.InspyLogger">
+<em class="property">class </em><code class="sig-prename descclassname">inspy_logger.</code><code class="sig-name descname">InspyLogger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">device_name</span></em>, <em class="sig-param"><span class="n">log_level</span></em><span class="sig-paren">)</span><a class="headerlink" href="#inspy_logger.InspyLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code></p>
+<p>Starts a colored and formatted logging device for you.</p>
+<p>Starts a colored and formatted logging device for you. No need to worry about handlers, etc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>device_name</strong> (<em>str</em>) – A string containing the name you’d like to choose for the root logger</p></li>
+<li><p><strong>log_level</strong> (<em>str</em>) – <p>A string containing the name of the level you’d like InspyLogger to be limited to. You can choose between:</p>
+<ul>
+<li><p>debug</p></li>
+<li><p>info</p></li>
+<li><p>warning</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="inspy_logger.InspyLogger.adjust_level">
+<code class="sig-name descname">adjust_level</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">l_lvl</span><span class="o">=</span><span class="default_value">'info'</span></em>, <em class="sig-param"><span class="n">silence_notif</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#inspy_logger.InspyLogger.adjust_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust the level of the logger associated with this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_lvl</strong> (<em>str</em>) – <p>A string containing the name of the level you’d like InspyLogger to be limited to. You can choose between:</p>
+<ul>
+<li><p>debug</p></li>
+<li><p>info</p></li>
+<li><p>warning</p></li>
+</ul>
+</p></li>
+<li><p><strong>silence_notif</strong> (<em>bool</em>) – Silence notifications (of ‘info’ level) when adjusting the logger’s level. True for</p></li>
+<li><p><strong>output and False to get these notifications.</strong> (<em>no</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="inspy_logger.InspyLogger.start">
+<code class="sig-name descname">start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mute</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">no_version</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#inspy_logger.InspyLogger.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the actual logging instance and fill the attributes that __init__ creates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mute</strong> (<em>bool</em>) – Mute all output that starting the root-logger would produce. True: No output on executing start() | False: Do not suppress all output</p></li>
+<li><p><strong>no_version</strong> (<em>bool</em>) – If you start the logger using the ‘debug’ log-level the logger will output its own version information. True: Suppress this output, no matter the log-level | False: Do no suppress this output</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you give the ‘mute’ parameter a value of <cite>True</cite> then the value of the <cite>no_version</cite> parameter will be ignored.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt id="inspy_logger.LEVELS">
+<code class="sig-prename descclassname">inspy_logger.</code><code class="sig-name descname">LEVELS</code><em class="property"> = ['debug', 'info', 'warning']</em><a class="headerlink" href="#inspy_logger.LEVELS" title="Permalink to this definition">¶</a></dt>
+<dd><p>The names of the log output levels one can pick from</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">InspyLogger</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">inspy_logger</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">inspy_logger package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">inspy_logger</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">inspy_logger</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Taylor-Jayde Blackstone.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/inspy_logger.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
