@@ -249,7 +249,7 @@ class InspyLogger(object):
 
                 self.manifest.append(manifest_entry)
 
-                return getLogger(self.own_logger_root_name + f".{name}")
+                return getLogger(self.root_name + f".{name}")
 
             else:
                 raise ManifestEntryExistsError()
