@@ -26,7 +26,7 @@ from inspy_logger.errors import ManifestEntryExistsError
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.1-alpha.12"
+RELEASE = "2.1-alpha.13"
 
 VERSION = "2.1"
 
@@ -50,11 +50,33 @@ islatest = None
 
 class InspyLogger(object):
     class Version:
-        def __init__(self):
+        def __init__(self, device_name: str = None,
+                     log_lvl: str = 'info'):
             """
 
             This class helps manage the Version information for InspyLogger
 
+            Note:
+                Providing either of the parameters for this class will automatically
+                also start initialization of the InspyLogger.LogDevice class which
+                will be present as an attribute in the InspyLogger instance as
+                `InspyLogger.device`
+                
+            Note:
+                *Attention!* You _must_ provide a 'device_name' if you provide a
+                'log_lvl' which must be one of the following values:
+                  * 'debug'
+                  * 'info''
+                  * 'warning'
+                  * 'error'
+            
+            Parameters:
+                
+                device_name (str): The name for the root logger in the form of a string.
+                
+                log_lvl (str): The level at which you'd like the logger to output messages.
+            
+            
             """
 
             self.package_name = "InSPy-Logger"
@@ -75,6 +97,11 @@ class InspyLogger(object):
             self.latest_stable = None
             self.latest_pr = None
             self.offline = False
+            
+            if device_name:
+                self.device = InspyLogger.LogDevice(device_name, log_lvl)
+            else:
+                self.device = InspyLogger.LogDevice
 
         def __instruction_feeder(self, instruct_group):
             for line in instruct_group:
