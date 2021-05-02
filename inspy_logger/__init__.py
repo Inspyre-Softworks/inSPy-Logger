@@ -50,8 +50,7 @@ islatest = None
 
 class InspyLogger(object):
     class Version:
-        def __init__(self, device_name: str = None,
-                     log_lvl: str = 'info'):
+        def __init__(self):
             """
 
             This class helps manage the Version information for InspyLogger
@@ -97,11 +96,6 @@ class InspyLogger(object):
             self.latest_stable = None
             self.latest_pr = None
             self.offline = False
-            
-            if device_name:
-                self.device = InspyLogger.LogDevice(device_name, log_lvl)
-            else:
-                self.device = InspyLogger.LogDevice
 
         def __instruction_feeder(self, instruct_group):
             for line in instruct_group:
@@ -202,9 +196,16 @@ class InspyLogger(object):
 
             return (ver, is_latest)
 
-    def __init__(self):
+    def __init__(self, device_name = None, log_level = 'info'):
         self.loc_version = self.Version()  # 'loc' = short for 'local' for the curious
         self.VERSION = self.loc_version.local
+
+        if not device_name:
+            self.device = self.LogDevice
+        else:
+            self.device = self.LogDevice(device_name, log_level)
+
+        self.level = log_level
 
     def __get_version(self, pkg_name):
 
@@ -397,7 +398,7 @@ class InspyLogger(object):
             self.adjust_level(self.l_lvl)
             _log_ = logging.getLogger(self.own_logger_root_name)
             if not mute:
-                _log_.info(f"Logger started for %s" % self.root_name)
+                _log_.debug(f"Logger started for %s" % self.root_name)
                 if not no_version:
                     _log_.debug(
                         f"\nLogger Info:\n" + ("*" * 35) + f"\n{VERSION}\n" + ("*" * 35)
