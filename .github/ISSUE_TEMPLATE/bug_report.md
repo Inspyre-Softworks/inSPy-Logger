@@ -1,3 +1,12 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: "[BUG] It ain't working!"
+labels: Bug::Unconfirmed
+assignees: doubledave, tayjaybabee
+
+---
+
 💬 **Describe the bug**<br>
 *A clear and concise description of what the bug is.*
 
