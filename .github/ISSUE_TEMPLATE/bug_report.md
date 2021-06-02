@@ -48,4 +48,4 @@
 *Are there any open or closed issues you're aware of that are seemingly related to this one?*
 
 🤬 **Your Experience with Python**<br>
-*This helps me determine the scope of explanation I'd need to provide if I do indeed need to explain something to you about your issue. This isn't so I can call you a n00b before sighing loudly, I swear (though, it may help prevent unwarranted instances of this). :heart: *
+*This helps me determine the scope of explanation I'd need to provide if I do indeed need to explain something to you about your issue. This isn't so I can call you a n00b before sighing loudly, I swear (though, it may help prevent unwarranted instances of this). :heart:*
