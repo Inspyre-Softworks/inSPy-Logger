@@ -1,4 +1,4 @@
-### Do What the Fuck You Want To - Public License (v3.0 3, Sept. 2020)
+### Do What the Fuck You Want To - Public License (v3.0 4, June 6. 2021)
 ----
 ----
 

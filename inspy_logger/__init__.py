@@ -21,12 +21,13 @@ from luddite import get_version_pypi, get_versions_pypi
 import time
 import inspect
 from inspy_logger.errors import ManifestEntryExistsError
+from inspy_logger.manifest import Manifest
 
 #####################################
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.1-alpha.13"
+RELEASE = "2.1-alpha.14"
 
 VERSION = "2.1"
 
@@ -46,6 +47,8 @@ LEVELS = ["debug", "info", "warning"]
 latest_version = "Please start the InspyLogger class"
 
 islatest = None
+
+manifest = None
 
 
 class InspyLogger(object):
@@ -254,33 +257,29 @@ class InspyLogger(object):
 
             # Start a logger for this function
             log = getLogger(self.own_logger_root_name + ".add_child")
-            ts = time.time()
-            frame = inspect.stack()[1]
-            frame_name = frame[3]
-            line_no = frame[2]
-            file_name = frame[1]
 
-            log.debug(
-                f"Received request to add {name} to {self.root_name} by {frame_name} on line {line_no} of {file_name}.")
-            log.debug(f"Full Frame Info {frame}")
-
-            existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
-
-            if not existing:
-                # Assemble a manifest entry.
-                manifest_entry = {
-                    "child_name": name,
-                    "caller_file": file_name,
-                    "calling_line": line_no,
-                    "created_ts": ts
-                }
-
-                self.manifest.append(manifest_entry)
-
-                return getLogger(self.root_name + f".{name}")
-
+            if not name.startswith(self.root_name):
+                log.debug(f"Received child name {name} which needs {self.root_name} prepended to it.")
+                name = self.root_name + f'.{name}'
+                log.debug(f'Corrected child log name to {name}.')
             else:
-                raise ManifestEntryExistsError()
+                log.debug(f'Child logger {name} needed no modification.')
+
+            log.debug("Fetching new logger for caller...")
+            caller_child = getLogger(name)
+
+            return caller_child
+
+            # existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
+
+            # if not existing:
+            #     # Assemble a manifest entry.
+            #     manifest_entry = {
+            #         "child_name": name,
+            #         "caller_file": file_name,
+            #         "calling_line": line_no,
+            #         "created_ts": ts
+            
 
         def add_child(self, name: str):
             """
@@ -294,13 +293,23 @@ class InspyLogger(object):
                 getLogger: A child logging device.
             
             """
+            log = self.__add_child(self.root_name + '.InSPyLogger.add_child')
 
-            try:
 
-                return self.__add_child(name)
+            frame = inspect.stack()[1]
+            frame_name = frame[3]
+            line_num = frame[2]
+            file_name = frame[1]                                                                                
 
-            except ManifestEntryExistsError as e:
-                print(e.message)
+            if self.manifest.check(name):
+                log.debug(f"Found log device {name}")
+                return self.manifest.contents[name]['device']
+            else:
+                log.debug(
+                f"REQ ADD {name} TO {self.root_name} BY {frame_name} {file_name}:L{line_num}.")
+                child_log = self.__add_child(name)
+                self.manifest.add(name, child_log, file_name, line_num)
+                return child_log
 
         def adjust_level(self, l_lvl="info", silence_notif=False):
             """
@@ -405,6 +414,9 @@ class InspyLogger(object):
                     )
                     self.started = True
 
+            manifest = Manifest(self.root_name, self.device, None, None)
+            self.manifest = manifest
+
             return self.device
 
         def __init__(self, device_name, log_level):
@@ -432,5 +444,5 @@ class InspyLogger(object):
             self.started = False
             self.last_lvl_change_by = None
             self.device = None
-            self.manifest = []
+            self.manifest = None
             self.main_handler = None
