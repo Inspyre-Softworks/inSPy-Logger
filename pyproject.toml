@@ -9,7 +9,7 @@ python = "^3.6.3"
 colorlog = "^5.0.1"
 setuptools-autover = "^1.0.2"
 luddite = "^1.0.1"
-packaging = "^20.4"
+packaging = "^21.0"
 
 [tool.poetry.dev-dependencies]
 
