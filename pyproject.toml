@@ -6,7 +6,7 @@ authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6.3"
-colorlog = "^5.0.1"
+colorlog = "^6.7.0"
 setuptools-autover = "^1.0.2"
 luddite = "^1.0.1"
 packaging = "^20.4"
