@@ -136,47 +136,47 @@ class InspyLogger(object):
                 self.latest_pr = ("Unknown", "Offline")
                 self.needs_update = ("Unknown", "Offline")
                 self.optional_update = False
-            if not self.offline:
-                if self.needs_update is not None:
-                    if self.needs_update:
-                        notif_lines = [
-                            "An update for InSPy-Logger is available! Please update!",
-                            "You can update in one of the following ways:"
-                        ]
+            if (
+                not self.offline
+                and self.needs_update is not None
+                and self.needs_update
+            ):
+                notif_lines = [
+                    "An update for InSPy-Logger is available! Please update!",
+                    "You can update in one of the following ways:"
+                ]
 
-                        direct_update_instructions = [
-                            "    - Through the package itself:",
-                            "        from inspy_logger import InspyLogger, LogDevice",
-                            "        ",
-                            "        i_log = InspyLogger()",
-                            "        iLog_ver = i_log.Version()",
-                            "        iLog_ver.update(pr=False)",
-                        ]
+                direct_update_instructions = [
+                    "    - Through the package itself:",
+                    "        from inspy_logger import InspyLogger, LogDevice",
+                    "        ",
+                    "        i_log = InspyLogger()",
+                    "        iLog_ver = i_log.Version()",
+                    "        iLog_ver.update(pr=False)",
+                ]
 
-                        pypi_update_instructions = [
-                            "    - Through your system's implementation of PIP",
-                            "        $> python3 -m pip install --update inspy_logger",
-                            "        OR",
-                            "        $> python3 -m pip install inspy_logger VER"
-                        ]
+                pypi_update_instructions = [
+                    "    - Through your system's implementation of PIP",
+                    "        $> python3 -m pip install --update inspy_logger",
+                    "        OR",
+                    "        $> python3 -m pip install inspy_logger VER"
+                ]
 
-                        border = str("*-*" * 20)
-                        mid_rule = str("-|-" * 20)
+                border = str("*-*" * 20)
+                # Notify the user through the console of an update being available.
+                print(notif_lines)
 
-                        # Notify the user through the console of an update being available.
-                        print(notif_lines)
+                print(border)
 
-                        print(border)
+                self.__instruction_feeder(direct_update_instructions)
 
-                        self.__instruction_feeder(direct_update_instructions)
+                print("-|-" * 20)
 
-                        print(mid_rule)
+                self.__instruction_feeder(pypi_update_instructions)
 
-                        self.__instruction_feeder(pypi_update_instructions)
+                print(border)
 
-                        print(border)
-
-                        return False, "outdated", self.local
+                return False, "outdated", self.local
 
             # If the constant ON_REPO is Bool(False) we'll assume it's a pre-release
             if not ON_REPO:
@@ -203,10 +203,11 @@ class InspyLogger(object):
         self.loc_version = self.Version()  # 'loc' = short for 'local' for the curious
         self.VERSION = self.loc_version.local
 
-        if not device_name:
-            self.device = self.LogDevice
-        else:
-            self.device = self.LogDevice(device_name, log_level)
+        self.device = (
+            self.LogDevice(device_name, log_level)
+            if device_name
+            else self.LogDevice
+        )
 
         self.level = log_level
 
@@ -214,20 +215,17 @@ class InspyLogger(object):
 
         if self.loc_version.is_up_to_date:
             update_statement = "You are up to date!"
+        elif pkg_ver.parse(str(self.VERSION)) < pkg_ver.parse(str(get_version_pypi(pkg_name))):
+            update_statement = f"You are running an older version of {pkg_name} than what is available. Consider upgrading."
         else:
-            if pkg_ver.parse(str(self.VERSION)) < pkg_ver.parse(str(get_version_pypi(pkg_name))):
-                update_statement = f"You are running an older version of {pkg_name} than what is available. Consider upgrading."
-            else:
-                if self.VERSION in get_versions_pypi(pkg_name):
-                    avail_ver = (
-                        ", a developmental version available via the PyPi repository"
-                    )
-                else:
-                    avail_ver = (
-                        ", a version that is NOT available via any online package manager"
-                    )
-                update_statement = f"You are running a version of {pkg_name} that is newer than the latest version{avail_ver}"
-                update_statement += f"\nThe versions available from PyPi are: {', '.join(get_versions_pypi(pkg_name))}"
+            avail_ver = (
+                ", a developmental version available via the PyPi repository"
+                if self.VERSION in get_versions_pypi(pkg_name)
+                else ", a version that is NOT available via any online package manager"
+            )
+
+            update_statement = f"You are running a version of {pkg_name} that is newer than the latest version{avail_ver}"
+            update_statement += f"\nThe versions available from PyPi are: {', '.join(get_versions_pypi(pkg_name))}"
 
         ver = str(f"{pretty_name} ({self.VERSION}) using Python {PY_VER}\n" + f"{update_statement}")
 
@@ -256,19 +254,17 @@ class InspyLogger(object):
         def __add_child(self, name: str):
 
             # Start a logger for this function
-            log = getLogger(self.own_logger_root_name + ".add_child")
+            log = getLogger(f"{self.own_logger_root_name}.add_child")
 
             if not name.startswith(self.root_name):
                 log.debug(f"Received child name {name} which needs {self.root_name} prepended to it.")
-                name = self.root_name + f'.{name}'
+                name = f'{self.root_name}.{name}'
                 log.debug(f'Corrected child log name to {name}.')
             else:
                 log.debug(f'Child logger {name} needed no modification.')
 
             log.debug("Fetching new logger for caller...")
-            caller_child = getLogger(name)
-
-            return caller_child
+            return getLogger(name)
 
             # existing = next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None)
 
@@ -293,7 +289,7 @@ class InspyLogger(object):
                 getLogger: A child logging device.
             
             """
-            log = self.__add_child(self.root_name + '.InSPyLogger.add_child')
+            log = self.__add_child(f'{self.root_name}.InSPyLogger.add_child')
 
 
             frame = inspect.stack()[1]
@@ -347,7 +343,7 @@ class InspyLogger(object):
                     _log.info(
                         f"Last level change was implemented by: {self.last_lvl_change_by}"
                     )
-                    _log.info(f"Updating last level changer")
+                    _log.info("Updating last level changer")
 
                 self.last_lvl_change_by = _caller
 
@@ -357,7 +353,7 @@ class InspyLogger(object):
                 _ = DEBUG
             elif self.l_lvl == "info":
                 _ = INFO
-            elif self.l_lvl == "warn" or self.l_lvl == "warning":
+            elif self.l_lvl in ["warn", "warning"]:
                 _ = WARNING
 
             _log.setLevel(_)
@@ -407,7 +403,7 @@ class InspyLogger(object):
             self.adjust_level(self.l_lvl)
             _log_ = logging.getLogger(self.own_logger_root_name)
             if not mute:
-                _log_.debug(f"Logger started for %s" % self.root_name)
+                _log_.debug(f"Logger started for {self.root_name}")
                 if not no_version:
                     _log_.debug(
                         f"\nLogger Info:\n" + ("*" * 35) + f"\n{VERSION}\n" + ("*" * 35)
@@ -440,7 +436,7 @@ class InspyLogger(object):
                 log_level = "info"
             self.l_lvl = log_level.lower()
             self.root_name = device_name
-            self.own_logger_root_name = self.root_name + ".InspyLogger"
+            self.own_logger_root_name = f"{self.root_name}.InspyLogger"
             self.started = False
             self.last_lvl_change_by = None
             self.device = None
