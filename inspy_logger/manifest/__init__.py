@@ -6,15 +6,12 @@ from box import Box
 class Manifest(object):
     def __init__(self, root_name, root_device, calling_file,line_num):
         self.name = root_name
-        
+
         self.contents = None
         self.add(root_name, root_device, calling_file, line_num)
 
     def check(self, name):
-        if name in self.contents.keys():
-            return True
-        else:
-            return False
+        return name in self.contents.keys()
 
     def add(self, name, logger_device, calling_file, line_num):
         """
