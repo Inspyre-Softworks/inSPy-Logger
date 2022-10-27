@@ -1,17 +1,21 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "2.1alpha12"
+version = "2.1"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6.3"
-colorlog = "^5.0.1"
+python = "^3.7"
+colorlog = "^6.7"
 setuptools-autover = "^1.0.2"
 luddite = "^1.0.1"
 packaging = "^20.4"
+domain-suffixes = "^1.1.3"
 
 [tool.poetry.dev-dependencies]
+
+[tool.poetry.group.dev.dependencies]
+ptipython = "^1.0.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
