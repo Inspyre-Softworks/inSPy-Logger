@@ -134,3 +134,4 @@ notebooks/
 /manifest.txt
 /poetry.lock
 suffix_data.cache
+!/build/
