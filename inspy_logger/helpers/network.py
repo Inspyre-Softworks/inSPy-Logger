@@ -26,11 +26,12 @@ Date:
 from urllib.parse import quote as url_safe
 
 import requests
+
 from inspy_logger.helpers.cache import TLDCache
 
 DEFAULT_TEST_HOSTS = [
-    ['https', 'inspyre', 'tech'],
-    ['https', 'google', 'com']
+        ['https', 'inspyre', 'tech'],
+        ['https', 'google', 'com']
 ]
 """
 :obj:`list`[:obj:`list`[:obj:`str`]]:
@@ -44,19 +45,6 @@ hosts = []
 """
 
 TLD_CACHE = TLDCache()
-    """_summary_
-
-    Raises:
-        TypeError: _description_
-        ValueError: _description_
-        TypeError: _description_
-        ValueError: _description_
-        ValueError: _description_
-        ValueError: _description_
-
-    Returns:
-        _type_: _description_
-    """
 
 VALID_TLDS = TLD_CACHE.TLDs
 
@@ -96,8 +84,8 @@ class Host():
             # will be accessible via class properties.
             self.__protocol, self.__host_name, self.__tld = url_parts
             self.__valid_protocols = [
-                'http',
-                'https',
+                    'http',
+                    'https',
             ]
 
         @property
@@ -170,9 +158,6 @@ class Host():
             """
             The tld function returns the top-level domain of a given URL.
 
-            Arguments:
-                None
-
             Returns:
                 str: The top level domain of the url
 
@@ -243,13 +228,13 @@ class Host():
             """
             return dict(
                 {
-                    'formatted': self.formatted,
-                    'parts': {
-                        'protocol': self.protocol,
-                        'host_name': self.host_name,
-                        'TLD': self.tld
-                    },
-                    'reachable': None
+                        'formatted': self.formatted,
+                        'parts':     {
+                                'protocol':  self.protocol,
+                                'host_name': self.host_name,
+                                'TLD':       self.tld
+                        },
+                        'reachable': None
                 }
             )
 
@@ -338,7 +323,7 @@ class Host():
         try:
             requests.head(
                 self.URL.formatted,
-                timeout=timeout
+                timeout = timeout
             )
             self.status = 'UP'
 
@@ -349,10 +334,10 @@ class Host():
 
 
 def check_connectivity(
-    test_hosts=None,
-    timeout=3,
-    online_if_any=True,
-    online_if_all=False
+        test_hosts=None,
+        timeout=3,
+        online_if_any=True,
+        online_if_all=False
 ):
     """
     The check_connectivity function checks the connectivity of a list of hosts.
@@ -386,7 +371,7 @@ def check_connectivity(
     if online_if_any and online_if_all:
         raise ValueError('Both online_if_any and online_if_all cannot be True')
 
-    statuses = [host.check_connectivity(timeout=timeout) for host in hosts]
+    statuses = [host.check_connectivity(timeout = timeout) for host in hosts]
 
     if online_if_any:
         return 'UP' in statuses

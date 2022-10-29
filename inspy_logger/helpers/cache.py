@@ -7,7 +7,6 @@ from time import time
 from appdirs import user_cache_dir
 from domain_suffixes.suffixes import Suffixes
 from humanize.time import precisedelta
-from numpy import float128
 
 PICKLE_FILEPATH = Path(
     user_cache_dir(
@@ -18,14 +17,7 @@ PICKLE_FILEPATH = Path(
 
 
 class TLDCache(object):
-    """
-    TLDCache AI is creating summary for TLDCache
 
-    :param object: [description]
-    :type object: [type]
-    :return: [description]
-    :rtype: [type]
-    """
     parent_dir = PICKLE_FILEPATH.parent
 
     def __init__(self):
@@ -34,11 +26,17 @@ class TLDCache(object):
         self.__num_tlds = None
         self.__tlds = None
         self.__data = None
+        self.__last_renewal_ts = None
+        self.__renewal_hist = None
 
     def build(self):
         self.__data = {
-            'created_ts': time(),
-            'tlds': self.fetch_from_source()
+                'created_ts': time(),
+                'renewal_data': {
+                        'last_ts': None,
+                        'history': [],
+                },
+                'tlds': self.fetch_from_source()
         }
 
         return self.__data
