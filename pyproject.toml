@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "2.1"
+version = "2.1.1"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
@@ -15,6 +15,7 @@ appdirs = "^1.4.4"
 colorama = "^0.4.6"
 requests = "^2.28.1"
 humanize = "^4.4.0"
+python-box = "^6.1.0"
 
 [tool.poetry.dev-dependencies]
 ptipython = "^1.0.1"

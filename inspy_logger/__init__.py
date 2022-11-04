@@ -7,7 +7,7 @@ Returns:
     InspyLogger: A colored and formatted logging device.
 
 """
-
+from __future__ import annotations
 import inspect
 import logging
 import sys
@@ -20,15 +20,16 @@ from luddite import get_version_pypi
 from pkg_resources import DistributionNotFound
 
 from inspy_logger.errors import ManifestEntryExistsError, DeviceNotStartedError, DeviceAlreadyStartedError
+from inspy_logger.manifest import Manifest
 from inspy_logger.helpers.network import check_connectivity
+
+from inspy_logger.__about__ import __version__ as VERSION, __prog__ as PROG, __authors__ as AUTHORS
 
 #####################################
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
 RELEASE = "2.1"
-
-VERSION = "2.1"
 
 ON_REPO = True
 
@@ -414,24 +415,23 @@ class InspyLogger(object):
                 "Received request to add %(name)s to %(root_name)s by %(frame_name)s on line %(line_no)s of %(file_name)s.")
             log.debug("Full Frame Info ")
 
-            if existing := next((sub for sub in self.manifest if sub['child_name'].lower() == name.lower()), None):
+            name = f'{root_name}.{name}'
+
+            if existing := self.manifest.check(name):
                 try:
                     raise ManifestEntryExistsError()
                 except ManifestEntryExistsError as e:
                     log.warning(e.message)
                     return existing
 
-            # Assemble a manifest entry.
-            manifest_entry = {
-                    "child_name":   name,
-                    "caller_file":  file_name,
-                    "calling_line": line_no,
-                    "created_ts":   ts
-            }
 
-            self.manifest.append(manifest_entry)
 
-            return getLogger(f"{name}")
+
+            logger = getLogger(f'{name}')
+
+            self.manifest.add(name=name, logger_device=logger, calling_file=file_name, line_num=line_no)
+
+            return logger
 
         def add_child(self, name: str):
             """
@@ -579,6 +579,13 @@ class InspyLogger(object):
                 - info
                 - warning
             """
+            frame = inspect.stack()[1]
+
+            frame_name = frame[3]
+
+            line_no = frame[2]
+
+            file_name = frame[1]
 
             if log_level is None:
                 log_level = 'INFO'
@@ -594,8 +601,12 @@ class InspyLogger(object):
 
             self.last_lvl_change_by = None
             self.device = None
-            self.manifest = []
+            self.__manifest = Manifest(self.root_name, self, frame_name, line_no)
             self.main_handler = None
+
+        @property
+        def manifest(self):
+            return self.__manifest
 
         @property
         def name(self):
