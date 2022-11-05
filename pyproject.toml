@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "2.1.2"
+version = "2.1.3"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 
