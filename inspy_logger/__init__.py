@@ -61,7 +61,7 @@ class InspyLogger(object):
 
             """
 
-            self.package_name = "InSPy-Logger"
+            self.package_name = PROG
             """The name of the program"""
 
             self.local = VERSION
@@ -473,13 +473,12 @@ class InspyLogger(object):
             _log = getLogger(self.root_name)
 
             _caller = inspect.stack()[1][3]
-
+            self.__last_level = None
             if self.last_lvl_change_by is None:
                 _log.info("Setting logger level for first time")
                 _log.debug("Signing in")
                 self.last_lvl_change_by = "Starting Logger"
-                last_level = self.level
-                last_level_change_by = self.last_lvl_change_by
+                self.__last_level = self.level
             else:
                 if not silence_notif:
                     _log.info(
@@ -509,6 +508,26 @@ class InspyLogger(object):
                     new_lvl = WARNING
 
             _log.setLevel(new_lvl)
+
+        @property
+        def last_level(self):
+            return self.__last_level
+
+        @last_level.setter
+        def last_level(self, new):
+            if new not in LEVELS:
+                raise ValueError(f"Level must be one of {LEVELS}.")
+            else:
+                self.__last_level = new
+
+        @property
+        def last_level_change_by(self):
+            return self.__last_level_change_by
+
+        @last_level_change_by.setter
+        def last_level_change_by(self, new):
+            if not isinstance(new, str):
+                raise TypeError(f"The last_level_change_by property must be a string, not {type(new)}!")
 
         def start(self, mute=False, no_version=False):
             """
@@ -581,6 +600,7 @@ class InspyLogger(object):
                 - info
                 - warning
             """
+            self.__last_level = None
             frame = inspect.stack()[1]
 
             frame_name = frame[3]
@@ -588,6 +608,8 @@ class InspyLogger(object):
             line_no = frame[2]
 
             file_name = frame[1]
+
+            self.file_name = file_name
 
             if log_level is None:
                 log_level = 'INFO'
@@ -632,7 +654,7 @@ class InspyLogger(object):
 
         @level.setter
         def level(self, new):
-            self.__level = new
+            self.adjust_level(new)
 
         @property
         def started(self):

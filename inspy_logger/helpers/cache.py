@@ -42,6 +42,7 @@ class TLDCache(object):
 
         return self.__data
 
+    @staticmethod
     def load(self):
         """ Load the pickle file for the cache.
 
@@ -62,7 +63,7 @@ class TLDCache(object):
         Write the contents of the cache to the file-system path indicated by :obj:`PICKLE_FILEPATH`
 
         Raises:
-            :exception:`PermissionError`: If the pickle file can't be written due to permissions writing the file to storage. 
+            :exception:`PermissionError`: If the pickle file can't be written due to permissions writing the file to storage.
         """
 
         if not self.parent_dir.exists():
@@ -71,6 +72,7 @@ class TLDCache(object):
         with open(PICKLE_FILEPATH, 'wb') as pfp:
             pkl_dump(self.__data, pfp)
 
+    @staticmethod
     def fetch_from_source(self):
         """ Fetch the top-level-domain list from the source
 
@@ -125,3 +127,14 @@ class TLDCache(object):
     @property
     def age(self) -> str:
         return precisedelta(self.age_in_seconds)
+
+
+"""
+File Change History:
+
+11/5/22 - 4:24 AM (target: v2.1.2):
+  - Code cleanup
+  - Transform from class functions to static methods;
+      - `TLDCache.load`
+      - `TLDCache.fetch_from_source`                
+"""

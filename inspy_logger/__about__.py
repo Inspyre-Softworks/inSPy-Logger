@@ -2,7 +2,8 @@
 
 File: inspy_logger/__about__.py
 Project: inSPy-Logger
-Description: 
+Description:
+    Holds information about the inSPy-Logger program and its version.
 
 Created: 11/3/22 - 21:05:06
 
@@ -17,3 +18,10 @@ __authors__ = [
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
 ]
+
+'''
+File Change History:
+11/5/22 - 4:21 AM (v2.1.2):
+ - Added description to docstring. (target: 2.1.2)
+
+'''

@@ -41,8 +41,8 @@ DEFAULT_TEST_HOSTS = [
 
 hosts = []
 """
-:obj:`list`[:obj:`Host`]: 
-    A list of host objects that will be used to connect to. 
+:obj:`list`[:obj:`Host`]:
+    A list of host objects that will be used to connect to.
 """
 
 TLD_CACHE = TLDCache()
@@ -379,3 +379,10 @@ def check_connectivity(
 
     if online_if_all:
         return 'DOWN' in statuses
+
+"""
+File Change History:
+
+11/5/22 - 4:29 AM (target: v2.1.2):
+    - Code cleanup; no operational changes.
+"""

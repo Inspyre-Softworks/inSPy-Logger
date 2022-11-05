@@ -18,7 +18,7 @@ class InSPyLoggerError(Exception):
     def __init__(self, message=None, skip_print=False):
         # If the child exception provides a message we can introduce this with
         # the following phrase;
-        msg_prefix = f'\nSome further context...\n'
+        msg_prefix = '\nSome further context...\n'
 
         # If we're provided a message on instantiation we'll prepend our prefix
         # to it while assigning it to the :var:`message` variable. If no message
@@ -93,3 +93,9 @@ class ManifestEntryExistsError(Exception):
             caller_name = frame[3]
 
         self.message = str(f"{msg} | Caller: {caller_name}")
+
+"""
+File Change History:
+
+11/5/22 - 4:22 AM - Code cleanup. No operational changes. (target: v2.1.2)
+"""
