@@ -12,7 +12,7 @@ Since:
 """
 
 __prog__ = 'inSPy-Logger'
-__version__ = '2.1.1'
+__version__ = '2.1.2'
 __authors__ = [
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')

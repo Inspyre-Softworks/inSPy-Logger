@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from os import makedirs
 from pathlib import Path
 from pickle import dump as pkl_dump
 from pickle import load as pkl_load
 from time import time
-
 from appdirs import user_cache_dir
 from domain_suffixes.suffixes import Suffixes
 from humanize.time import precisedelta
@@ -50,7 +51,6 @@ class TLDCache(object):
             :exception:`FileNotFoundError`: If the pickle file does not exist.
 
         """
-        print('Loading pickle file')
         with open(PICKLE_FILEPATH, 'rb') as pfp:
             res = pkl_load(pfp)
 

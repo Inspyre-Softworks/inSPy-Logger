@@ -21,6 +21,7 @@ Date:
     10/25/2022 - 03:28hrs
 
 """
+from __future__ import annotations
 
 # Do our import
 from urllib.parse import quote as url_safe

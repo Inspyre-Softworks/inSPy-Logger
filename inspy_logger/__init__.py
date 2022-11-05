@@ -29,7 +29,7 @@ from inspy_logger.__about__ import __version__ as VERSION, __prog__ as PROG, __a
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.1"
+RELEASE = "2.1.2"
 
 ON_REPO = True
 
@@ -415,7 +415,9 @@ class InspyLogger(object):
                 "Received request to add %(name)s to %(root_name)s by %(frame_name)s on line %(line_no)s of %(file_name)s.")
             log.debug("Full Frame Info ")
 
-            name = f'{root_name}.{name}'
+            if not name.startswith(self.root_name):
+                log.debug('Prefixing root device name to child device signature')
+                name = f'{root_name}.{name}'
 
             if existing := self.manifest.check(name):
                 try:
