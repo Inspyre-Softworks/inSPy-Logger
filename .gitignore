@@ -133,3 +133,6 @@ notebooks/
 .vscode/settings.json
 /manifest.txt
 /poetry.lock
+suffix_data.cache
+_build/
+source/
