@@ -27,8 +27,7 @@ from __future__ import annotations
 from urllib.parse import quote as url_safe
 
 import requests
-
-from inspy_logger.helpers.cache import TLDCache
+from public_suffix_list import PublicSuffixList
 
 DEFAULT_TEST_HOSTS = [
         ['https', 'inspyre', 'tech'],
@@ -45,9 +44,9 @@ hosts = []
     A list of host objects that will be used to connect to.
 """
 
-TLD_CACHE = TLDCache()
+TLD_CACHE = PublicSuffixList()
 
-VALID_TLDS = TLD_CACHE.TLDs
+VALID_TLDS = TLD_CACHE._suffixes.keys()
 
 
 class Host():
