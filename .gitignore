@@ -136,3 +136,4 @@ notebooks/
 suffix_data.cache
 _build/
 source/
+.idea/
