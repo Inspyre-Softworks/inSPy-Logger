@@ -29,7 +29,7 @@ from inspy_logger.__about__ import __version__ as VERSION, __prog__ as PROG, __a
 ## MOST ACCURATE VERSION INDICATOR ##
 #####################################
 
-RELEASE = "2.1.2"
+RELEASE = "2.2"
 
 ON_REPO = True
 
@@ -474,10 +474,10 @@ class InspyLogger(object):
 
             _caller = inspect.stack()[1][3]
             self.__last_level = None
-            if self.last_lvl_change_by is None:
+            if self.__last_level_change_by is None:
                 _log.info("Setting logger level for first time")
                 _log.debug("Signing in")
-                self.last_lvl_change_by = "Starting Logger"
+                self.last_level_change_by = "Starting Logger"
                 self.__last_level = self.level
             else:
                 if not silence_notif:
@@ -493,7 +493,7 @@ class InspyLogger(object):
 
                 self.last_lvl_change_by = _caller
 
-            self.level = l_lvl
+            self.__level = l_lvl
 
             if isinstance(self.level, int):
                 new_lvl = self.level
@@ -615,6 +615,7 @@ class InspyLogger(object):
                 log_level = 'INFO'
 
             self.__device_name = log_name
+            self.__last_level_change_by = None
 
             self.__started = False
             self.__level = log_level
@@ -623,7 +624,7 @@ class InspyLogger(object):
             self.own_logger_root_name = f"{self.root_name}.InSPyLogger"
             super(InspyLogger.LogDevice, self).__init__(name = self.own_logger_root_name, level = self.level.upper())
 
-            self.last_lvl_change_by = None
+
             self.device = None
             self.__manifest = Manifest(self.root_name, self, frame_name, line_no)
             self.main_handler = None
