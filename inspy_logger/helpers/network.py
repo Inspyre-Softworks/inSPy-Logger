@@ -27,8 +27,7 @@ from __future__ import annotations
 from urllib.parse import quote as url_safe
 
 import requests
-
-from inspy_logger.helpers.cache import TLDCache
+from public_suffix_list import PublicSuffixList
 
 DEFAULT_TEST_HOSTS = [
         ['https', 'inspyre', 'tech'],
@@ -44,10 +43,11 @@ hosts = []
 :obj:`list`[:obj:`Host`]:
     A list of host objects that will be used to connect to.
 """
+psl = PublicSuffixList()
 
-TLD_CACHE = TLDCache()
+URL_SUFFIXES = psl._suffixes
 
-VALID_TLDS = TLD_CACHE.TLDs
+VALID_TLDS = URL_SUFFIXES
 
 
 class Host():
@@ -169,7 +169,7 @@ class Host():
         def tld(self, new):
             if not isinstance(new, str):
                 raise TypeError(f"New value must be a string not {type(new)}")
-            if new not in TLD_CACHE.TLDs:
+            if new not in URL_SUFFIXES:
                 raise ValueError("TLD must be valid!")
 
             self.__tld = new
