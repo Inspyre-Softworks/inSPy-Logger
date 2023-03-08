@@ -240,6 +240,19 @@ class InspyLogger(object):
         else:
             self.dev
 
+    def start(self):
+        """
+        Start the logging device.
+
+        Arguments:
+            None
+
+        Returns:
+            InspyLogger.LogDevice
+
+        """
+        return self.device.start()
+
     @property
     def name(self) -> (str | None):
         """
