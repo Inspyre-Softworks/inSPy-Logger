@@ -24,6 +24,9 @@ from inspy_logger.manifest import Manifest
 from inspy_logger.helpers.network import check_connectivity
 
 from inspy_logger.__about__ import __version__ as VERSION, __prog__ as PROG, __authors__ as AUTHORS
+from inspy_logger.helpers.filters import SuppressFileFilter
+
+from rich.logging import RichHandler
 
 #####################################
 ## MOST ACCURATE VERSION INDICATOR ##
@@ -144,24 +147,24 @@ class InspyLogger(object):
                 self.optional_update = False
             if not self.offline and self.needs_update is not None and self.needs_update:
                 notif_lines = [
-                        "An update for InSPy-Logger is available! Please update!",
-                        "You can update in one of the following ways:"
+                    "An update for InSPy-Logger is available! Please update!",
+                    "You can update in one of the following ways:"
                 ]
 
                 direct_update_instructions = [
-                        "    - Through the package itself:",
-                        "        from inspy_logger import InspyLogger, LogDevice",
-                        "        ",
-                        "        i_log = InspyLogger()",
-                        "        iLog_ver = i_log.Version()",
-                        "        iLog_ver.update(pr=False)",
+                    "    - Through the package itself:",
+                    "        from inspy_logger import InspyLogger, LogDevice",
+                    "        ",
+                    "        i_log = InspyLogger()",
+                    "        iLog_ver = i_log.Version()",
+                    "        iLog_ver.update(pr=False)",
                 ]
 
                 pypi_update_instructions = [
-                        "    - Through your system's implementation of PIP",
-                        "        $> python3 -m pip install --update inspy_logger",
-                        "        OR",
-                        "        $> python3 -m pip install inspy_logger VER"
+                    "    - Through your system's implementation of PIP",
+                    "        $> python3 -m pip install --update inspy_logger",
+                    "        OR",
+                    "        $> python3 -m pip install inspy_logger VER"
                 ]
 
                 border = str("*-*" * 20)
@@ -208,7 +211,15 @@ class InspyLogger(object):
 
             return ver, is_latest
 
-    def __init__(self, log_name=None, log_level=None, autostart=False, start_on_device_call=False):
+    def __init__(
+            self,
+            log_name=None,
+            log_level=None,
+            autostart=False,
+            start_on_device_call=False,
+            use_rich=False,
+            ipython_mode=False
+    ):
         self.__auto_start = autostart
 
         self.loc_version = self.Version()  # 'loc' = short for 'local' for the curious
@@ -233,12 +244,10 @@ class InspyLogger(object):
         self.__start_on_device_call = start_on_device_call
 
         if log_name:
-            self.device = self.LogDevice(log_name, log_level)
+            self.device = self.LogDevice(log_name, log_level, use_rich=use_rich)
 
             if self.__auto_start and not self.device.started:
                 self.device.start()
-        else:
-            self.dev
 
     @property
     def name(self) -> (str | None):
@@ -274,12 +283,12 @@ class InspyLogger(object):
     @autostart.setter
     def autostart(self, new):
         if self.device is not None and not self.device.started:
-            if isinstance(new, bool):\
+            if isinstance(new, bool):
                 self.__auto_start = new
             else:
                 raise TypeError('Autostart must be a boolean value')
         elif self.device.started:
-             raise DeviceAlreadyStartedError('Setting "autostart" would do no good.')
+            raise DeviceAlreadyStartedError('Setting "autostart" would do no good.')
 
     @property
     def start_on_device_call(self):
@@ -319,7 +328,7 @@ class InspyLogger(object):
         return self.__loc_version
 
     @property
-    def VERSION(self):
+    def version(self):
         """
         The VERSION function is used to return the version of the package.
         It will first check if a local version has been set, and if not it will
@@ -334,6 +343,8 @@ class InspyLogger(object):
             self.__VERSION = self.local_version.local
 
         return self.__VERSION
+
+    VERSION = version
 
     # def __get_version(self, pkg_name):
     #     """
@@ -399,7 +410,7 @@ class InspyLogger(object):
 
         def __add_child(self, name: str):
             # Start a logger for this function
-            log = getLogger(f"{self.own_logger_root_name}.add_child")
+            log = getLogger(f'{self.own_logger_root_name}.add_child')
             ts = time.time()
             frame = inspect.stack()[1]
 
@@ -412,7 +423,8 @@ class InspyLogger(object):
             root_name = self.root_name
 
             log.debug(
-                "Received request to add %(name)s to %(root_name)s by %(frame_name)s on line %(line_no)s of %(file_name)s.")
+                "Received request to add %(name)s to %(root_name)s by %(frame_name)s on line %(line_no)s of %("
+                "file_name)s.")
             log.debug("Full Frame Info ")
 
             if not name.startswith(self.root_name):
@@ -425,9 +437,6 @@ class InspyLogger(object):
                 except ManifestEntryExistsError as e:
                     log.warning(e.message)
                     return existing
-
-
-
 
             logger = getLogger(f'{name}')
 
@@ -522,26 +531,36 @@ class InspyLogger(object):
 
         @property
         def last_level_change_by(self):
-            return self.__last_level_change_by
+            return self.last_lvl_change_by
 
         @last_level_change_by.setter
         def last_level_change_by(self, new):
             if not isinstance(new, str):
                 raise TypeError(f"The last_level_change_by property must be a string, not {type(new)}!")
 
-        def start(self, mute=False, no_version=False):
+
+        def start(self, mute=False, no_version=False, use_rich=None):
             """
 
             Start the actual logging instance and fill the attributes that __init__ creates.
 
             Arguments:
 
-                mute (bool): Mute all output that starting the root-logger would produce. True: No output on executing start() | False: Do not suppress all output
+                mute (bool):
+                    Mute all output that starting the root-logger would produce. True: No output on executing start() |
+                    False: Do not suppress all output
 
-                no_version (bool): If you start the logger using the 'debug' log-level the logger will output its own version information. True: Suppress this output, no matter the log-level | False: Do no suppress this output
+                no_version (bool):
+                    If you start the logger using the 'debug' log-level the logger will output its own version
+                    information. True: Suppress this output, no matter the log-level | False: Do not suppress this
+                    output
+
+                use_rich (bool):
+                    The logger should use the Rich Handler.
 
             Note:
-                If you give the 'mute' parameter a value of `True` then the value of the `no_version` parameter will be ignored.
+                If you give the 'mute' parameter a value of `True` then the value of the `no_version` parameter will be
+                ignored.
 
             Returns:
                 None
@@ -553,26 +572,40 @@ class InspyLogger(object):
                 )
                 return None
 
-            formatter = ColoredFormatter(
-                "%(bold_cyan)s%(asctime)-s%(reset)s%(log_color)s::%(name)s.%(module)-14s::%(levelname)-10s%(reset)s%("
-                "blue)s%(message)-s",
-                datefmt = None,
-                reset = True,
-                log_colors = {
-                        "DEBUG":    "bold_cyan",
-                        "INFO":     "bold_green",
-                        "WARNING":  "bold_yellow",
-                        "ERROR":    "bold_red",
+            if not use_rich:
+
+                formatter = ColoredFormatter(
+                    "%(bold_cyan)s%(asctime)-s%(reset)s%(log_color)s::%(name)s.%(module)-14s::%(levelname)-10s%("
+                    "reset)s%(blue)s%(message)-s",
+                    datefmt=None,
+                    reset=True,
+                    log_colors={
+                        "DEBUG": "bold_cyan",
+                        "INFO": "bold_green",
+                        "WARNING": "bold_yellow",
+                        "ERROR": "bold_red",
                         "CRITICAL": "bold_red",
-                },
-            )
+                    },
+                )
+
+                self.main_handler = logging.StreamHandler()
+                self.main_handler.setFormatter(formatter)
+            else:
+                formatter = "[%(name)s] %(message)s"
+                logging.basicConfig(
+                    format=formatter,
+                    datefmt="[%X] - ",
+
+                )
+                self.main_handler = RichHandler(markup=True)
+                self.main_handler.addFilter(SuppressFileFilter('diff.py'))
+
 
             self.device = logging.getLogger(self.root_name)
-            self.main_handler = logging.StreamHandler()
-            self.main_handler.setFormatter(formatter)
             self.device.addHandler(self.main_handler)
             self.adjust_level(self.level)
-            _log_ = logging.getLogger(self.own_logger_root_name)
+            _log_ = self.add_child(self.own_logger_root_name)
+
             if not mute:
                 _log_.info(f"Logger started for {self.root_name}")
                 if not no_version:
@@ -584,14 +617,16 @@ class InspyLogger(object):
 
             return self.device
 
-        def __init__(self, log_name, log_level=None):
+        __use_rich = False
+
+        def __init__(self, log_name, log_level=None, use_rich=False):
             """
 
             Starts a colored and formatted logging device for you. No need to worry about handlers, etc
 
             Args:
 
-                device_name (str): A string containing the name you'd like to choose for the root logger
+                log_name (str): A string containing the name you'd like to choose for the root logger
 
                 log_level (str): A string containing the name of the level you'd like InspyLogger to be limited to.
 
@@ -601,6 +636,7 @@ class InspyLogger(object):
                 - warning
             """
             self.__last_level = None
+            self.__use_rich = use_rich
             frame = inspect.stack()[1]
 
             frame_name = frame[3]
@@ -619,11 +655,11 @@ class InspyLogger(object):
 
             self.__started = False
             self.__level = log_level
+            self.last_lvl_change_by = None
 
             self.root_name = self.name
             self.own_logger_root_name = f"{self.root_name}.InSPyLogger"
-            super(InspyLogger.LogDevice, self).__init__(name = self.own_logger_root_name, level = self.level.upper())
-
+            super(InspyLogger.LogDevice, self).__init__(name=self.own_logger_root_name, level=self.level.upper())
 
             self.device = None
             self.__manifest = Manifest(self.root_name, self, frame_name, line_no)
