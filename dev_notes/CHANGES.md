@@ -76,7 +76,7 @@ ebcae49
 : Non-package related files.
 
 c7e1957
-: inspy_logger/\_\_init\_\_.py
+: inspy_logger/_\_init\_\_.py
 
 8c89008
 : inspy_logger/\_\_about\_\_.py
