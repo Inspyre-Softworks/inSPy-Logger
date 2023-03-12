@@ -3,9 +3,7 @@ name = "inspy-logger"
 version = "2.2"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
-classifiers = [
-    Environment :: Console
-]
+
 
 [tool.poetry.dependencies]
 python = "^3.7"
