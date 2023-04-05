@@ -1,5 +1,5 @@
 appdirs==1.4.4
-beautifulsoup4==4.11.1; python_full_version >= "3.6.0"
+beautifulsoup4==4.12.1; python_full_version >= "3.6.0"
 bs4==0.0.1
 certifi==2022.9.24; python_version >= "3.7" and python_version < "4"
 charset-normalizer==2.1.1; python_version >= "3.7" and python_version < "4" and python_full_version >= "3.6.0"
