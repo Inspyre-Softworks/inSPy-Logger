@@ -137,3 +137,4 @@ suffix_data.cache
 _build/
 source/
 nppBackup/
+.idea/
