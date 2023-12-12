@@ -3,8 +3,28 @@ import inspect
 import logging
 from rich.logging import RichHandler
 from inspy_logger.__about__ import __prog__ as PROG_NAME
+from inspy_logger.helpers import find_variable_in_call_stack
+
+# Let's set up some constants.
+LEVEL_MAP = [
+    ('debug', logging.DEBUG),
+    ('info', logging.INFO),
+    ('warning', logging.WARNING),
+    ('error', logging.ERROR),
+    ('critical', logging.CRITICAL),
+    ('fatal', logging.FATAL),
+]
+"""
+List[Tuple[str, int]]:
+    A list of tuples containing the name of a logging level and it's corresponding logging level constant.
+"""
+
+LEVELS = [level[0] for level in LEVEL_MAP]
+"""The list of level names."""
 
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
+
+logging_level = getattr
 
 from inspy_logger.helpers import (
     translate_to_logging_level,
@@ -47,7 +67,12 @@ class Logger:
             self.__name = name
             self.logger = logging.getLogger(name)
             self.logger.setLevel(logging.DEBUG)
-            self.__console_level = console_level
+            determined_level = console_level
+
+            if isinstance(console_level, str):
+                determined_level = translate_to_logging_level(console_level)
+
+            self.__console_level = determined_level
             self.filename = filename
             self.__file_level = file_level or DEFAULT_LOGGING_LEVEL
             self.parent = parent
@@ -63,6 +88,10 @@ class Logger:
             self.set_up_console()
             self.set_up_file()
             self.children = []
+
+    @property
+    def device(self):
+        return self.logger
 
     @property
     def name(self):
@@ -182,14 +211,17 @@ class Logger:
         return f'<Logger: {name} at {hex_id}{parent_part}>'
 
 
-LOG_DEVICE = Logger(PROG_NAME, DEFAULT_LOGGING_LEVEL)
-MOD_LOG_DEVICE = LOG_DEVICE.get_child("log_engine")
+found_level = find_variable_in_call_stack('INSPY_LOG_LEVEL', DEFAULT_LOGGING_LEVEL)
+
+
+LOG_DEVICE = Logger(PROG_NAME, found_level)
+MOD_LOG_DEVICE = LOG_DEVICE.get_child("log_engine", found_level)
 MOD_LOGGER = MOD_LOG_DEVICE.logger
 MOD_LOGGER.debug(f"Started logger for {__name__}.")
 
 add_child = LOG_DEVICE.get_child
 
-InspyLogger = LOG_DEVICE
+InspyLogger = Logger
 
 def _get_parent_logging_device():
     """
