@@ -1,6 +1,7 @@
 import logging
 import re
 from logging import Formatter
+import inspect
 
 """
 This module contains utility functions and classes for handling logging and
@@ -121,3 +122,68 @@ def translate_to_logging_level(level_str):
 
     # Return the ps_logging level if it exists, else return None
     return level_mapping.get(level_str)
+
+
+# def find_variable_in_call_stack(var_name, default=None):
+#     """
+#     Searches for a variable in the namespaces of all modules in the call stack.
+#
+#     Args:
+#         var_name (str): The name of the variable to find.
+#         default: Default value to return if the variable is not found.
+#
+#     Returns:
+#         The first occurrence of the variable found in the call stack or the default value.
+#     """
+#     frame = inspect.currentframe()
+#
+#     try:
+#         # Traverse the stack in the order of calling
+#         while frame:
+#             module = inspect.getmodule(frame)
+#             if module and hasattr(module, var_name):
+#                 print('FOUND THE VARIABLE IN THE CALL STACK!')
+#                 return getattr(module, var_name)
+#
+#             frame = frame.f_back
+#
+#         return default
+#     finally:
+#         del frame
+
+
+def find_variable_in_call_stack(var_name, default=None):
+    frame = inspect.currentframe()
+
+    try:
+        # Iterate through the call stack
+        while frame:
+            # Check both the local and global namespace of the frame
+            caller_locals = frame.f_locals
+            caller_globals = frame.f_globals
+
+            if var_name in caller_locals:
+                return caller_locals[var_name]
+            elif var_name in caller_globals:
+                return caller_globals[var_name]
+
+            # Move to the next frame
+            frame = frame.f_back
+
+        # Return default if the variable is not found in any frame
+        return default
+    finally:
+        # Ensure that the reference to the frame is deleted to prevent reference cycles
+        del frame
+
+def check_preemptive_level_set():
+    """
+    Checks if the preemptive level has been set in the call stack.
+
+    Returns:
+        bool: True if the preemptive level has been set, False otherwise.
+    """
+    return find_variable_in_call_stack("INSPY_LOG_LEVEL", False)
+
+
+check_preemptive_level_set()
