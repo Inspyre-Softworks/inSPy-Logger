@@ -10,7 +10,7 @@ idna==3.4; python_version >= "3.7" and python_version < "4"
 importlib-metadata==5.0.0; python_version >= "3.7" and python_version < "3.8"
 luddite==1.0.2
 packaging==21.3; python_version >= "3.6"
-pyparsing==3.0.9; python_full_version >= "3.6.8" and python_version >= "3.6"
+pyparsing==3.1.1; python_full_version >= "3.6.8" and python_version >= "3.6"
 requests==2.28.1; python_version >= "3.7" and python_version < "4"
 setuptools-autover==1.0.2; python_version >= "3.5"
 soupsieve==2.3.2.post1; python_version >= "3.6" and python_full_version >= "3.6.0"
