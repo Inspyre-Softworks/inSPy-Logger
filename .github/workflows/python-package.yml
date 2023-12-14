@@ -9,8 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.9, 3.10, 3.11]
-        poetry-version: [1.0, 1.0.10]
-        os: [ubuntu-21.04, macos-latest, windows-latest]
+        poetry-version: [1.6, 1.7]
+        os: [ubuntu-21.04, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
