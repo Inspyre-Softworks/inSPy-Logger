@@ -134,7 +134,7 @@ notebooks/
 /manifest.txt
 /poetry.lock
 suffix_data.cache
-_build/
+docs/_build/
 source/
 nppBackup/
 .idea/
