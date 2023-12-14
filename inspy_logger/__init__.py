@@ -234,12 +234,7 @@ class Logger:
             Logger: An instance of the Logger class for the calling module.
         """
         frame = inspect.currentframe().f_back
-        #print(frame)
-        #print(dir(frame))
-        #print(dir(inspect.getmodule(frame)))
-        #print(inspect.getmodule(frame).__name__)
-        module_path = cls._determine_module_path(frame)
-        if module_path:
+        if module_path := cls._determine_module_path(frame):
             return cls(module_path)
         else:
             raise ValueError("Unable to determine module path for logger creation.")
@@ -255,12 +250,10 @@ class Logger:
         Returns:
             str: The in-project path of the module.
         """
-        module = inspect.getmodule(frame)
-        if module:
+        if module := inspect.getmodule(frame):
             base_path = os.path.dirname(os.path.abspath(module.__file__))
             relative_path = os.path.relpath(frame.f_code.co_filename, base_path)
-            module_path = relative_path.replace(os.path.sep, '.').rstrip('.py')
-            return module_path
+            return relative_path.replace(os.path.sep, '.').rstrip('.py')
         return None
 
 

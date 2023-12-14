@@ -68,7 +68,7 @@ def get_version_info():
     table.add_row('Full Version Name', get_full_version_name())
 
     if pypi_info.update_available:
-        table.add_row('Update Available', f'[bold green]Yes[/bold green]')
+        table.add_row('Update Available', '[bold green]Yes[/bold green]')
         table.add_row('Latest Version', f'{pypi_info.new_version_available_num}')
 
     table.add_row('Python Executable Path', sys.executable)
@@ -80,10 +80,7 @@ def get_version_info():
 
 def main():
 
-    if parsed_args.subcommand == 'update':
-        return update()
-
-    return get_version_info()
+    return update() if parsed_args.subcommand == 'update' else get_version_info()
 
 
 
