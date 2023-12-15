@@ -233,22 +233,23 @@ class Logger:
         return results
 
     def debug(self, message):
-        """
-        Logs a debug message.
+            """
+            Logs a debug message.
 
-        Args:
-            message (str): The message to log.
-        """
-        self.logger.debug(message)
+            Args:
+                message (str): The message to log.
+            """
+            self._log(logging.DEBUG, message, args=(), stacklevel=2)
+
 
     def info(self, message):
-        """
-        Logs an info message.
+            """
+            Logs an info message.
 
-        Args:
-            message (str): The message to log.
-        """
-        self.logger.info(message)
+            Args:
+                message (str): The message to log.
+            """
+            self._log(logging.INFO, message, args=(), stacklevel=2)
 
     def warning(self, message):
         """
@@ -257,7 +258,7 @@ class Logger:
         Args:
             message (str): The message to log.
         """
-        self.logger.warning(message)
+        self._log(logging.WARNING, message, args=(), stacklevel=2)
 
     def error(self, message):
         """
@@ -266,7 +267,7 @@ class Logger:
         Args:
             message (str): The message to log.
         """
-        self.logger.error(message)
+        self._log(logging.ERROR, message, args=(), stacklevel=2)
 
     def __repr__(self):
         name = self.name
@@ -315,6 +316,13 @@ class Logger:
             relative_path = os.path.relpath(frame.f_code.co_filename, base_path)
             return relative_path.replace(os.path.sep, '.').rstrip('.py')
         return None
+
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
+        """
+        Low-level logging implementation, passing stacklevel to findCaller.
+        """
+        if self.logger.isEnabledFor(level):
+            self.logger._log(level, msg, args, exc_info, extra, stack_info, stacklevel + 1)
 
 
 found_level = find_variable_in_call_stack('INSPY_LOG_LEVEL', DEFAULT_LOGGING_LEVEL)
