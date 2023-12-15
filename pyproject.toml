@@ -1,11 +1,34 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "2.1.3"
+version = "3.0-dev.3"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
+homepage = 'https://github.com/Inspyre-Softworks/inSPy-Logger'
+repository = 'https://github.com/Inspyre-Softworks/inSPy-Logger'
+documentation = 'https://inspy-logger.readthedocs.io/en/latest/'
+readme = 'README.md'
+license = 'MIT'
+keywords = ['cli', 'color', 'logging', 'log', 'terminal', 'console', 'colorama', 'colorlog', 'rich']
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: MIT License',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: System :: Logging',
+    'Topic :: Utilities',
+    ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.9,<4.0"
 colorlog = "^6.7"
 setuptools-autover = "^1.0.2"
 luddite = "^1.0.1"
@@ -19,11 +42,22 @@ rich = "^13.5.2"
 
 [tool.poetry.dev-dependencies]
 ptipython = "^1.0.1"
-Sphinx = "^5.3.0"
-sphinxcontrib-napoleon = "^0.7"
-sphinx-rtd-theme = "^1.0.0"
 asciinema = "^2.2.0"
 bpython = "^0.23"
+
+[tool.poetry.scripts]
+inspy-logger-tool = "inspy_logger.Scripts.main:main"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^7.2.6"
+sphinx-autodoc-typehints = "^1.25.2"
+sphinxcontrib-napoleon = "^0.7"
+sphinx-rtd-theme = "^2.0.0"
+sphinxcontrib-argdoc = "^0.1.3"
+autoclasstoc = "^1.6.0"
+sphinx-autodoc-annotation = "^1.0.post1"
+sphinxcontrib-autoprogram = "^0.1.8"
+
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
