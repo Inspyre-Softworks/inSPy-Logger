@@ -37,32 +37,32 @@ def start_root_logger():
     
     # An 'InspyLogger' instance does not resolve to a usable logger, but we'll need the instantiated class
     logger = InspyLogger(PROG_NAME, 'info')
-    
+
     # Then we can extract the actual log device from the instantiated 'logger'
     root_logger = logger.device
-    
+
     # A prefix for our output strings.
     # D.R.Y. - Don't Repeat Yourself
     prefix = 'This is a message with level: '
-    
+
     # Here we'll use the root logger to attempt to send a debug message to the console. If you don't see it
     # after runtime, don't worry; that's the behavior we are after. Remember; only messages of level 'info'
     # and higher will be output to the console if the log level is set to 'info'
     root_logger.debug(prefix + 'debug')
-    
+
     # Now a message with level 'info'. This message should be visible at runtime.
     root_logger.info(prefix + 'info')
-    
+
     # Now a message with level 'warning'. Again, this message should be visible at runtime.
     root_logger.info(prefix + 'warning')
-    
+
     # Now here are some of different levels. You can't, however, set InSPy-Logger to define any of these levels
     # as the threshold. In other words, if using InSPy-Logger the logger can not be started with any of the 
     # following logging levels being passed to the 'level' argument (the keyword argument for the 
     # 'InspyLogger' class) and will therefore -ALWAYS- output log messages with these log levels.
     _log = root_logger
-    _log.error(prefix + 'error')
-    _log.exception(prefix + 'exception')
+    _log.error(f'{prefix}error')
+    _log.exception(f'{prefix}exception')
     _log.critical(prefix + 'critical')
     _log.fatal(prefix + 'fatal')
     

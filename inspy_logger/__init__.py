@@ -40,11 +40,17 @@ class Logger:
     A Singleton class responsible for managing the logging mechanisms of the application.
     """
 
-    instances = {}
+    instances = {}  # A dictionary to hold instances of the Logger class.
 
     def __new__(cls, name, *args, **kwargs):
         """
         Creates or returns an existing instance of the Logger class for the provided name.
+
+        Args:
+            name (str): The name of the logger instance.
+
+        Returns:
+            Logger: An instance of the Logger class.
         """
 
         if name not in cls.instances:
@@ -54,15 +60,22 @@ class Logger:
         return cls.instances[name]
 
     def __init__(
-        self,
-        name,
-        console_level=DEFAULT_LOGGING_LEVEL,
-        file_level=logging.DEBUG,
-        filename="app.log",
-        parent=None,
+            self,
+            name,
+            console_level=DEFAULT_LOGGING_LEVEL,
+            file_level=logging.DEBUG,
+            filename="app.log",
+            parent=None,
     ):
         """
         Initializes a logger instance.
+
+        Args:
+            name (str): The name of the logger instance.
+            console_level (str, optional): The logging level for the console. Defaults to DEFAULT_LOGGING_LEVEL.
+            file_level (str, optional): The logging level for the file. Defaults to logging.DEBUG.
+            filename (str, optional): The name of the log file. Defaults to "app.log".
+            parent (Logger, optional): The parent logger instance. Defaults to None.
         """
 
         if not hasattr(self, "logger"):
@@ -93,10 +106,23 @@ class Logger:
 
     @property
     def device(self):
+
+        """
+        Returns the logger instance.
+
+        Returns:
+            Logger: The logger instance.
+        """
         return self.logger
 
     @property
     def name(self):
+        """
+        Returns the name of the logger instance.
+
+        Returns:
+            str: The name of the logger instance.
+        """
         return self.logger.name
 
     def set_up_console(self):
@@ -181,6 +207,18 @@ class Logger:
         return self.parent
 
     def find_child_by_name(self, name: str, case_sensitive=True, exact_match=False):
+        """
+        Searches for a child logger by its name.
+
+        Args:
+            name (str): The name of the child logger to search for.
+            case_sensitive (bool, optional): Whether the search should be case sensitive. Defaults to True.
+            exact_match (bool, optional): Whether the search should only return exact matches. Defaults to False.
+
+        Returns:
+            list or Logger: If exact_match is True, returns the Logger instance if found, else returns an empty list.
+                            If exact_match is False, returns a list of Logger instances whose names contain the search term.
+        """
         self.logger.debug(f'Searching for child with name: {name}')
         results = []
 
@@ -197,17 +235,40 @@ class Logger:
         return results
 
     def debug(self, message):
-        self.logger.debug(message)
+      """
+      Logs a debug message.
+      
+      Args:
+          message (str): The message to log.
+       """
+       self._log(logging.DEBUG, message, args=(), stacklevel=2)
 
     def info(self, message):
-        self.logger.info(message)
+        """
+        Logs an info message.
+        
+        Args:
+            message (str): The message to log.
+        """
+        self._log(logging.INFO, message, args=(), stacklevel=2)
 
     def warning(self, message):
-        self.logger.warning(message)
+        """
+        Logs a warning message.
+
+        Args:
+            message (str): The message to log.
+        """
+        self._log(logging.WARNING, message, args=(), stacklevel=2)
 
     def error(self, message):
-        self.logger.error(message)
+        """
+        Logs an error message.
 
+        Args:
+            message (str): The message to log.
+        """
+        self._log(logging.ERROR, message, args=(), stacklevel=2)
 
     def __repr__(self):
         name = self.name
@@ -223,7 +284,6 @@ class Logger:
             parent_part = str(parent_part[:-2])
 
         return f'<Logger: {name} w/ level {self.logger.level} at {hex_id}{parent_part}>'
-
 
     @classmethod
     def create_logger_for_caller(cls):
@@ -245,10 +305,12 @@ class Logger:
         Determines the in-project path of the module from the call frame.
 
         Args:
-            frame: The frame from which to determine the module path.
+            frame:
+                The frame from which to determine the module path.
 
         Returns:
-            str: The in-project path of the module.
+            str:
+                The in-project path of the module.
         """
         if module := inspect.getmodule(frame):
             base_path = os.path.dirname(os.path.abspath(module.__file__))
@@ -256,10 +318,15 @@ class Logger:
             return relative_path.replace(os.path.sep, '.').rstrip('.py')
         return None
 
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
+        """
+        Low-level logging implementation, passing stacklevel to findCaller.
+        """
+        if self.logger.isEnabledFor(level):
+            self.logger._log(level, msg, args, exc_info, extra, stack_info, stacklevel + 1)
 
 
 found_level = find_variable_in_call_stack('INSPY_LOG_LEVEL', DEFAULT_LOGGING_LEVEL)
-
 
 LOG_DEVICE = Logger(PROG_NAME, found_level)
 MOD_LOG_DEVICE = LOG_DEVICE.get_child("log_engine", found_level)

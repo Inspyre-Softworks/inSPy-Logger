@@ -54,7 +54,7 @@ def arg_parser():
     parser.add_argument('-n', '--no-log-info',
                         action='store_true',
                         default=False,
-                        help=f"The logger will output some information when it starts. Call this argument and it will not."
+                        help="The logger will output some information when it starts. Call this argument and it will not."
                        )
 
     return parser.parse_args()
