@@ -11,9 +11,10 @@ Since:
     v2.1.1
 
 """
+from inspy_logger.version import parse_version
 
 __prog__ = 'inSPy-Logger'
-__version__ = '3.0-dev.1'
+__version__ = parse_version()
 __authors__ = [
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
