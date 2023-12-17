@@ -20,7 +20,7 @@ def a_function(an_arg):
         an_arg (str): A string that the function will inject into a log line.
     
     """
-    log_name = PROG_NAME + '.a_function'
+    log_name = f'{PROG_NAME}.a_function'
     log = getLogger(log_name)
     debug = log.debug
     debug(f'Logger started for {log_name}!')
@@ -48,13 +48,13 @@ def start_root_logger():
     # Here we'll use the root logger to attempt to send a debug message to the console. If you don't see it
     # after runtime, don't worry; that's the behavior we are after. Remember; only messages of level 'info'
     # and higher will be output to the console if the log level is set to 'info'
-    root_logger.debug(prefix + 'debug')
+    root_logger.debug(f'{prefix}debug')
 
     # Now a message with level 'info'. This message should be visible at runtime.
-    root_logger.info(prefix + 'info')
+    root_logger.info(f'{prefix}info')
 
     # Now a message with level 'warning'. Again, this message should be visible at runtime.
-    root_logger.info(prefix + 'warning')
+    root_logger.info(f'{prefix}warning')
 
     # Now here are some of different levels. You can't, however, set InSPy-Logger to define any of these levels
     # as the threshold. In other words, if using InSPy-Logger the logger can not be started with any of the 
@@ -63,8 +63,8 @@ def start_root_logger():
     _log = root_logger
     _log.error(f'{prefix}error')
     _log.exception(f'{prefix}exception')
-    _log.critical(prefix + 'critical')
-    _log.fatal(prefix + 'fatal')
+    _log.critical(f'{prefix}critical')
+    _log.fatal(f'{prefix}fatal')
     
     
 start_root_logger()

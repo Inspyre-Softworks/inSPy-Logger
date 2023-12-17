@@ -64,7 +64,7 @@ def run():
     args = arg_parser()
     print(args)
     start_logger(args.log_level, args.no_log_info)
-    log_name = app_name + ".run"
+    log_name = f"{app_name}.run"
     log = getLogger(log_name)
     debug = log.debug
     debug("Logger started for main runner")
