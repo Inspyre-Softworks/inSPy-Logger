@@ -278,13 +278,8 @@ class PyPiVersionInfo:
             #print('Querying versions')
             self.__query_versions()
 
-        if self.include_pre_release_for_update_check:
-            latest = self.latest_pre_release
-
-        else:
-            latest = self.latest_stable
-
-        #print(f'Using latest {latest}')
-
-
-        return latest
+        return (
+            self.latest_pre_release
+            if self.include_pre_release_for_update_check
+            else self.latest_stable
+        )
