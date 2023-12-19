@@ -14,8 +14,8 @@ RELEASE_MAP = {
 __VERSION__ = {
     'major': 3,
     'minor': 0,
-    'patch': 0,
-    'release': None,
+    'patch': 1,
+    'release': 'final',
     'release_num': 0
 }
 
@@ -50,8 +50,11 @@ def get_full_version_name():
     """
     ver = parse_version()
     ver = ver.split('-')[0]
-    return f'v{ver} {RELEASE_MAP[__VERSION__["release"]]} ({__VERSION__["release_num"]})'
 
+    release_type = RELEASE_MAP[__VERSION__["release"]]
+    release_num = __VERSION__["release_num"]
+    release_str = f" {release_type} {'' if __VERSION__['release'].lower() == 'final' else f'({release_num})'}"
+    return f'v{ver}{release_str}'
 
 def get_pypi_info():
     """
