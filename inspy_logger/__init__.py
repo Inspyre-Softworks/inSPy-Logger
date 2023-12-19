@@ -251,9 +251,11 @@ class Logger:
             """
             self._log(logging.INFO, message, args=(), stacklevel=2)
 
+
     def warning(self, message):
         """
         Logs a warning message.
+
 
         Args:
             message (str): The message to log.
@@ -263,6 +265,7 @@ class Logger:
     def error(self, message):
         """
         Logs an error message.
+
 
         Args:
             message (str): The message to log.
@@ -283,6 +286,7 @@ class Logger:
             parent_part = str(parent_part[:-2])
 
         return f'<Logger: {name} w/ level {self.logger.level} at {hex_id}{parent_part}>'
+
 
     @classmethod
     def create_logger_for_caller(cls):
