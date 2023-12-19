@@ -20,15 +20,4 @@ __authors__ = [
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
 ]
 
-'''
-File Change History:
-11/5/22 - 4:21 AM (v2.1.2):
-  -  Added description to docstring. (target: 2.1.2)
- 
-11/5/22 - 4:41 AM:
-  - Version bump (target: 2.1.3)
-  
-08/16/2023 - 13:49 (v3.0):
-  - Version bump (v2.1.3 -> v3.0-dev.1)
-
-'''
+'
