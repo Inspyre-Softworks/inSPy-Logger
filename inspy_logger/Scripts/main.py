@@ -48,10 +48,13 @@ def update():
     Since:
         v3.0
     """
-    if pypi_info.update_available:
-        print(f'\n\n[bold green]Update Available![/bold green] New version: [bold cyan]{pypi_info.new_version_available}[/bold cyan]')
-    else:
-        print(f'\n\n[bold green]No update available.[/bold green] Current version: [bold cyan]{parse_version()}[/bold cyan] {"which is newer than the available version on PyPi.org" if pypi_info.installed_newer_than_latest else ""}')
+    try:
+        if pypi_info.update_available:
+            print(f'\n\n[bold green]Update Available![/bold green] New version: [bold cyan]{pypi_info.new_version_available}[/bold cyan]')
+        else:
+            print(f'\n\n[bold green]No update available.[/bold green] Current version: [bold cyan]{parse_version()}[/bold cyan] {"which is newer than the available version on PyPi.org" if pypi_info.installed_newer_than_latest else ""}')
+    except Exception as e:
+        print(f'An error occurred during the update check: {str(e)}')
 
 
 def get_version_info():

@@ -15,8 +15,8 @@ __VERSION__ = {
     'major': 3,
     'minor': 0,
     'patch': 0,
-    'release': 'dev',
-    'release_num': 4
+    'release': None,
+    'release_num': 0
 }
 
 

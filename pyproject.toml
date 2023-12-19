@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "inspy-logger"
-version = "3.0-dev.4"
+version = "3.0"
 description = "Colorable, scalable logger for CLI"
 authors = ["Taylor-Jayde Blackstone <tayjaybabee@gmail.com>"]
 homepage = 'https://github.com/Inspyre-Softworks/inSPy-Logger'
@@ -57,6 +57,10 @@ sphinxcontrib-argdoc = "^0.1.3"
 autoclasstoc = "^1.6.0"
 sphinx-autodoc-annotation = "^1.0.post1"
 sphinxcontrib-autoprogram = "^0.1.8"
+
+
+[tool.poetry.group.dev.dependencies]
+poetry-plugin-export = "^1.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
