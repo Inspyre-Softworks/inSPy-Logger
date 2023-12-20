@@ -18,6 +18,7 @@ class InSPyLoggerError(Exception):
     def __init__(self, message=None, skip_print=False):
         # If the child exception provides a message we can introduce this with
         # the following phrase;
+
         msg_prefix = '\nSome further context...\n'
 
         # If we're provided a message on instantiation we'll prepend our prefix
@@ -45,7 +46,6 @@ class DeviceNotStartedError(InSPyLoggerError):
     __child_frame_name = __child_frame[3]
 
     def __init__(self, message=None, skip_print=False):
-
         # Prettify our base message string.
         self.message = f"[{self.__class__.__name__}] [{self.__child_frame_name}] - {self.message}"
 
@@ -53,7 +53,7 @@ class DeviceNotStartedError(InSPyLoggerError):
 
         self.message += message
 
-        super(DeviceNotStartedError, self).__init__(message = self.message, skip_print = skip_print)
+        super(DeviceNotStartedError, self).__init__(message=self.message, skip_print=skip_print)
 
 
 class DeviceAlreadyStartedError(InSPyLoggerError):
@@ -73,8 +73,27 @@ class DeviceAlreadyStartedError(InSPyLoggerError):
 
         self.message += message
 
-        super(DeviceAlreadyStartedError, self).__init__(message = self.message, skip_print = skip_print)
+        super(DeviceAlreadyStartedError, self).__init__(message=self.message, skip_print=skip_print)
 
+
+class InvalidLoggerLevelError(InSPyLoggerError):
+    message = 'The provided log-level is invalid!'
+    prefix = '[Invalid Logger Level] - Provided log-level invalid.'
+
+    def __init__(self, message: str = None, skip_print: bool = False):
+        self.__child_caller_frame = inspect.stack()[1]
+        self.__child_caller_name = self.__child_caller_frame[3]
+
+        self.message = f"[{self.__class__.__name__}] - {self.message}"
+
+        message = f"{self.prefix} - {message}" if message is not None else ''
+
+        self.message += message
+
+        super(InvalidLoggerLevelError, self).__init__(message=self.message, skip_print=skip_print)
+
+    def __repr__(self):
+        return self.message
 
 
 class ManifestEntryExistsError(Exception):
@@ -93,6 +112,7 @@ class ManifestEntryExistsError(Exception):
             caller_name = frame[3]
 
         self.message = str(f"{msg} | Caller: {caller_name}")
+
 
 """
 File Change History:

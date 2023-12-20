@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="inSPy-Logger",
-    version="2.1",
+    version="3.0.1",
     packages=["inspy_logger"],
     url="https://softworks.inspyre.tech/inSPy-Logger",
     license="WTFPL",

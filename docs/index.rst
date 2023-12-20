@@ -1,12 +1,13 @@
-.. InspyLogger documentation master file, created by
-   sphinx-quickstart on Wed Dec  2 22:04:22 2020.
+.. Inspy-Logger documentation master file, created by
+   sphinx-quickstart on Tue Dec 12 01:45:19 2023.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to InspyLogger's documentation!
-=======================================
+Welcome to Inspy-Logger's documentation!
+========================================
 
 .. automodule:: inspy_logger
+     :members:
 
 .. toctree::
    :maxdepth: 2

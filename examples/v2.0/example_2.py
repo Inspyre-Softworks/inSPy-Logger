@@ -54,7 +54,7 @@ def arg_parser():
     parser.add_argument('-n', '--no-log-info',
                         action='store_true',
                         default=False,
-                        help=f"The logger will output some information when it starts. Call this argument and it will not."
+                        help="The logger will output some information when it starts. Call this argument and it will not."
                        )
 
     return parser.parse_args()
@@ -64,7 +64,7 @@ def run():
     args = arg_parser()
     print(args)
     start_logger(args.log_level, args.no_log_info)
-    log_name = app_name + ".run"
+    log_name = f"{app_name}.run"
     log = getLogger(log_name)
     debug = log.debug
     debug("Logger started for main runner")
