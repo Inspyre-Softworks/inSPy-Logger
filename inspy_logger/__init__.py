@@ -6,6 +6,7 @@ from rich.logging import RichHandler
 from inspy_logger.__about__ import __prog__ as PROG_NAME
 from inspy_logger.helpers import find_variable_in_call_stack
 
+
 # Let's set up some constants.
 LEVEL_MAP = [
     ('debug', logging.DEBUG),
@@ -105,6 +106,7 @@ class Logger:
 
     @property
     def device(self):
+
         """
         Returns the logger instance.
 
@@ -233,23 +235,22 @@ class Logger:
         return results
 
     def debug(self, message):
-            """
-            Logs a debug message.
-
-            Args:
-                message (str): The message to log.
-            """
-            self._log(logging.DEBUG, message, args=(), stacklevel=2)
-
+      """
+      Logs a debug message.
+      
+      Args:
+          message (str): The message to log.
+       """
+       self._log(logging.DEBUG, message, args=(), stacklevel=2)
 
     def info(self, message):
-            """
-            Logs an info message.
-
-            Args:
-                message (str): The message to log.
-            """
-            self._log(logging.INFO, message, args=(), stacklevel=2)
+        """
+        Logs an info message.
+        
+        Args:
+            message (str): The message to log.
+        """
+        self._log(logging.INFO, message, args=(), stacklevel=2)
 
 
     def warning(self, message):

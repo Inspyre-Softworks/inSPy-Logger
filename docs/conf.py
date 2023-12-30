@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 project = 'inspy-logger'
 copyright = '2023, Inspyre-Softworks, Taylor B.'
-author = 'Inspyre-Softworks, Taylor B.'
+author = 'Inspyre-Softwork
 release = '3.0.dev.4'
 
 # -- General configuration ---------------------------------------------------
