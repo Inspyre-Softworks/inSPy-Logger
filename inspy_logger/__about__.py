@@ -19,5 +19,3 @@ __authors__ = [
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
 ]
-
-'

@@ -1,7 +1,10 @@
 import requests
-import packaging
 from packaging import version as pkg_version
+import sys
+from rich.table import Table
+from rich import print
 
+# Constants
 RELEASE_MAP = {
     'dev': 'Development Build',
     'alpha': 'Alpha Build',
@@ -10,13 +13,12 @@ RELEASE_MAP = {
     'final': 'Final Release Build'
 }
 
-
 __VERSION__ = {
     'major': 3,
     'minor': 0,
-    'patch': 1,
-    'release': 'final',
-    'release_num': 0
+    'patch': 2,
+    'release': 'dev',
+    'release_num': 1
 }
 
 
@@ -56,235 +58,183 @@ def get_full_version_name():
     release_str = f" {release_type} {'' if __VERSION__['release'].lower() == 'final' else f'({release_num})'}"
     return f'v{ver}{release_str}'
 
-def get_pypi_info():
-    """
-    Gets the latest version information from PyPI.
-
-    Returns:
-        dict: The latest version information.
-
-    Since:
-        v1.0
-    """
-    url = 'https://pypi.org/pypi/inspy-logger/json'
-    resp = requests.get(url)
-    resp.raise_for_status()
-    resp = resp.json()
-    return resp
-
 
 class PyPiVersionInfo:
     """
     A class to represent the version information for this package from PyPi.
 
     Attributes:
-        latest_stable (str):
+        latest_stable (packaging.version.Version):
             The latest stable version of the package on PyPi.
 
-        latest_pre_release (str):
+        latest_pre_release (packaging.version.Version):
             The latest pre-release version of the package.
     Since:
         v3.0
     """
-    __url                                  = 'https://pypi.org/pypi/inspy-logger/json'
-    __queried                              = False
-    __installed                            = parse_version()
-    __include_pre_release_for_update_check = False
-    __new_version_available_num            = None
-    __checked_for_update                   = False
-    __installed_newer_than_latest          = None
+    __url = 'https://pypi.org/pypi/inspy-logger/json'
+    __installed = parse_version()
+    __checked_for_update = False
+    __newer_available_version = None
 
-    def __init__(self, include_pre_release_for_update_check=__include_pre_release_for_update_check):
+    def __init__(self, include_pre_release_for_update_check=False):
         self.__latest_stable = None
         self.__latest_pre_release = None
-
         self.__all_versions = None
-
         self.include_pre_release_for_update_check = include_pre_release_for_update_check
-
         self.__query_versions()
 
     @property
     def all_versions(self):
-        return self.__all_versions
+        if self.__all_versions is None:
+            self.__query_versions()
+        return sorted([pkg_version.parse(v) for v in self.__all_versions])
 
     @property
     def checked_for_update(self):
         return self.__checked_for_update
 
     @property
-    def include_pre_release_for_update_check(self):
-        """
-        Gets whether pre-release versions should be included when checking for updates.
-
-        Returns:
-            bool:
-                True if pre-release versions should be included, False otherwise.
-
-        Since:
-            v3.0
-
-        """
-        return self.__include_pre_release_for_update_check
-
-    @property
-    def installed_newer_than_latest(self):
-        return self.installed > self.latest_stable
-
-    @include_pre_release_for_update_check.setter
-    def include_pre_release_for_update_check(self, new):
-        if isinstance(new, bool):
-            self.__include_pre_release_for_update_check = new
-        else:
-            raise TypeError(f'Expected bool, received {type(new)}.')
-
-    @property
     def installed(self):
         """
         Gets the installed version of the package.
-
-        Returns:
-            packaging.version.Version:
-                The installed version of the package.
-
         """
         return pkg_version.parse(self.__installed)
+
+    @property
+    def installed_newer_than_latest(self):
+        return self.installed > self.latest
+
+    @property
+    def latest(self):
+        return (
+            self.all_versions[-1]
+            if self.include_pre_release_for_update_check
+            else self.latest_stable
+        )
 
     @property
     def latest_stable(self):
         """
         Gets the latest stable version of the package on PyPi.
-
-        Returns:
-            str: The latest stable version of the package on PyPi.
-
-        Since:
-            v3.0
         """
-        if self.__latest_stable is not  None:
-            return pkg_version.parse(self.__latest_stable)
-
-        return self.__latest_stable
+        if self.__latest_stable is None:
+            self.__query_versions()
+        return pkg_version.parse(self.__latest_stable)
 
     @property
     def latest_pre_release(self):
         """
         Gets the latest pre-release version of the package.
-
-        Returns:
-            str: The latest pre-release version of the package.
-
-        Since:
-            v3.0
         """
-        if self.all_versions is not None and self.__latest_pre_release is None:
-            most_recent = pkg_version.parse(self.all_versions[-1])
-            if most_recent.is_prerelease:
-                self.__latest_pre_release = most_recent
-
-        return self.__latest_pre_release
+        if self.__all_versions is None:
+            self.__query_versions()
+        pre_release_versions = [v for v in self.all_versions if v.is_prerelease]
+        return pre_release_versions[-1] if pre_release_versions else None
 
     @property
-    def new_version_available_num(self):
+    def newer_available_version(self):
+
+        if self.__newer_available_version is None:
+            self.check_for_update()
+
+        return self.__newer_available_version
+
+    def __query_versions(self):
         """
-        Gets the number of the latest version available on PyPi.
-
-        Returns:
-            int: The number of the latest version available on PyPi.
-
-        Since:
-            v3.0
+        Queries the versions from PyPi.
         """
-        if not self.checked_for_update:
-            self.update_available
-        return self.__new_version_available_num
+        try:
+            response = requests.get(self.__url)
+            response.raise_for_status()
+            data = response.json()
 
-    @property
-    def queried(self):
-        """
-        Checks if the versions have been queried.
-
-        Returns:
-            bool: True if the versions have been queried, False otherwise.
-
-        Since:
-            v3.0
-        """
-        return self.__queried
+            self.__all_versions = list(data['releases'].keys())
+            self.__latest_stable = data['info']['version']
+        except requests.RequestException as e:
+            # Handle connection errors, HTTP errors, etc.
+            print(f"Error querying PyPi: {e}")
 
     @property
     def update_available(self):
         """
         Checks if an update is available.
+        """
+        if self.__newer_available_version is None:
+            self.check_for_update()
+        return self.__newer_available_version is not None
+
+    def check_for_update(self, include_pre_releases=False):
+        latest_version = self.latest_stable
+
+        if include_pre_releases or self.include_pre_release_for_update_check:
+            latest_version = max(latest_version, self.latest_pre_release)
+
+        if latest_version > self.installed:
+            self.__newer_available_version = latest_version
+
+        self.__checked_for_update = True
+
+        return latest_version > self.installed
+
+    def update(self):
+        """
+        Checks for updates to inspy-logger.
 
         Returns:
-            bool: True if an update is available, False otherwise.
+            None`
 
         Since:
             v3.0
         """
-        if not self.queried:
-            #print('Querying versions')
-            self.__query_versions()
 
-        if not self.checked_for_update:
-            #print('Checking for update')
-            self.__compare_latest()
-            self.__checked_for_update = True
+        local_newer_statement = 'Local version is newer than latest version. This is likely a development build.'
 
-        if self.new_version_available_num is None and not self.queried:
-            #print('Getting latest')
-            self.__compare_latest()
+        if not self.installed_newer_than_latest:
+            local_newer_statement = ''
 
-        return self.new_version_available_num is not None
+        try:
+            if self.update_available:
+                print(f'\n\n[bold green]Update Available![/bold green] New version: '
+                      f'[bold cyan]{self.update_available}[/bold cyan]')
+            else:
+                print(f'\n\n[bold green]No update available.[/bold green] Current version: '
+                      f'[bold cyan]{parse_version()}[/bold cyan] {local_newer_statement}')
 
+        except Exception as e:
+            print(f'An error occurred during the update check: {str(e)}')
 
-
-
-    def __query_versions(self):
+    def print_version_info(self):
         """
-        Queries the versions from PyPi.
+        Print version information in a formatted table.
+
+        This function creates a table using the `Table` class and populates it with version information about the current Python environment. It then prints the table to the console.
+
+        Parameters:
+            self: The current instance of the class.
 
         Returns:
-            dict: The versions from PyPi.
-
-        Since:
-            v3.0
+            None
         """
-        if not self.queried:
-            resp = requests.get(self.__url)
-            resp.raise_for_status()
-            #print(resp.status_code)
-            resp = resp.json()
 
-            self.__all_versions = list(resp['releases'].keys())
-            #print(self.all_versions)
+        # Create a table
 
-            self.__latest_stable = resp['info']['version']
-            #print(self.latest_stable)
+        table = Table(show_header=False, show_lines=True, expand=True, border_style='bright_blue',
+                      row_styles=['none', 'dim'])
 
+        # Add columns
+        table.add_column('Property', style='cyan', width=20)
+        table.add_column('Value', justify='center')
 
+        # Add rows
+        table.add_row('Version', parse_version(), )
+        table.add_row('Full Version Name', get_full_version_name())
 
-            self.__queried = True
+        if self.update_available:
+            table.add_row('Update Available', '[bold green]Yes[/bold green]')
+            table.add_row('Latest Version', f'{self.new_version_available_num}')
 
-    def __compare_latest(self):
-        latest = self.__get_latest()
+        table.add_row('Python Executable Path', sys.executable)
+        table.add_row('Python Version', sys.version)
 
-        if latest is not None and latest > self.installed:
-            self.__new_version_available_num = latest
-
-    def __get_latest(self):
-        if not self.queried:
-            #print('Querying versions')
-            self.__query_versions()
-
-        if self.include_pre_release_for_update_check:
-            latest = self.latest_pre_release
-
-        else:
-            latest = self.latest_stable
-
-        #print(f'Using latest {latest}')
-
-
-        return latest
+        print(table)

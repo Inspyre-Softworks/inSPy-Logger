@@ -61,6 +61,16 @@ class Loggable:
     class_logger = None
 
     def __init__(self, parent_log_device=None, **kwargs):
+        """
+        Initializes an instance of the class.
+
+        Args:
+            parent_log_device (optional): The parent log device. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
+        """
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
         if self.parent_log_device is not None:
