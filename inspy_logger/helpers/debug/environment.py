@@ -176,4 +176,9 @@ def fetch_system_info(copy_to_clipboard=False, format_type='markdown', print_to_
     info = get_system_info(format_type)
     if copy_to_clipboard:
         copy(info)
+
+    if print_to_console is None:
+        print_to_console = True
+    if print_to_console:
+        print(info)
     return info

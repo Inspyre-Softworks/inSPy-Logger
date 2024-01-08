@@ -17,12 +17,12 @@ __VERSION__ = {
     'major': 3,
     'minor': 0,
     'patch': 2,
-    'release': 'dev',
-    'release_num': 1
+    'release': 'final',
+    'release_num': 0
 }
 
 
-def parse_version():
+def parse_version() -> str:
     """
     Parses the version information into a string.
 

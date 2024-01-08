@@ -9,12 +9,12 @@ Author:
 """
 INSPY_LOG_LEVEL = 'info'
 
+PROGNAME = 'inspy-logger-tool'
+
 from argparse import ArgumentParser
+
 from inspy_logger.helpers.debug.environment import fetch_system_info
-from inspy_logger.version import parse_version, get_full_version_name, PyPiVersionInfo
-from rich import print
-from rich.table import Table
-import sys
+from inspy_logger.version import parse_version, PyPiVersionInfo
 
 # ---- SET UP PARSER --------------------------------
 
@@ -60,9 +60,6 @@ else:
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
 
 
-
-
-
 def main():
 
     version = PyPiVersionInfo()
@@ -92,10 +89,6 @@ def main():
 
         fetch_system_info(copy_to_clipboard=parsed_args.copy_to_clipboard, format_type=fmt, print_to_console=parsed_args.print)
 
-
-
-    if parsed_args.subcommand in ACTIONS:
-        ACTIONS[parsed_args.subcommand]()
 
 
 

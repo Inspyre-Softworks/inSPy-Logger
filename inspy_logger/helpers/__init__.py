@@ -2,6 +2,8 @@ import logging
 import re
 from logging import Formatter
 import inspect
+from inspy_logger.common import PROG_NAME, LEVEL_MAP
+from inspy_logger.__about__ import __PROG__
 
 """
 This module contains utility functions and classes for handling logging and
@@ -108,20 +110,35 @@ def translate_to_logging_level(level_str):
     Returns:
         int: The corresponding logging level, or None if the string does not correspond to a level.
     """
-    level_str = level_str.upper()
+    if not isinstance(level_str, str):
+        return level_str
 
-    # Mapping of string to ps_logging levels
-    level_mapping = {
-        "DEBUG": logging.DEBUG,
-        "INFO": logging.INFO,
-        "WARNING": logging.WARNING,
-        "ERROR": logging.ERROR,
-        "CRITICAL": logging.CRITICAL,
-        "NOTSET": logging.NOTSET,
-    }
+    level_str = level_str.lower()
 
     # Return the ps_logging level if it exists, else return None
-    return level_mapping.get(level_str)
+    return LEVEL_MAP.get(level_str)
+
+
+def get_level_name(level: int) -> (str, None):
+    """
+    Gets the name of the logging level.
+
+    Args:
+        level (int):
+            The logging level.
+
+    Returns:
+        str:
+            The name of the logging level.
+
+        None:
+            If the logging level is not found.
+    """
+    for level_name, level_value in LEVEL_MAP.items():
+        if level_value == level:
+            return level_name.upper()
+
+    return None
 
 
 # def find_variable_in_call_stack(var_name, default=None):
@@ -176,7 +193,8 @@ def find_variable_in_call_stack(var_name, default=None):
         # Ensure that the reference to the frame is deleted to prevent reference cycles
         del frame
 
-def check_preemptive_level_set():
+
+def check_preemptive_level_set() -> (str, None):
     """
     Checks if the preemptive level has been set in the call stack.
 
@@ -186,4 +204,41 @@ def check_preemptive_level_set():
     return find_variable_in_call_stack("INSPY_LOG_LEVEL", False)
 
 
-check_preemptive_level_set()
+def determine_client_prog_name() -> (str, None):
+    """
+    Determines the name of the program that is calling the logger.
+
+    Returns:
+        str:
+            The name of the program that is calling the logger.
+
+        None:
+            If the name of the program that is calling the logger cannot be determined.
+    """
+    valid_vars = [
+        'PROG',
+        'PROG_NAME',
+        'PROGRAM_NAME',
+        'PROGRAM',
+        'PROGNAME',
+        '__PROG__'
+    ]
+    for var in valid_vars:
+        prog_name = find_variable_in_call_stack(var)
+        if prog_name:
+            if prog_name != __PROG__:
+                return prog_name
+
+
+def find_argument_parser():
+    """
+    Finds the argument parser in the call stack.
+
+    Returns:
+        ArgumentParser:
+            The argument parser in the call stack.
+
+        None:
+            If the argument parser cannot be found in the call stack.
+    """
+    return find_variable_in_call_stack("ARGUMENT_PARSER", None)
