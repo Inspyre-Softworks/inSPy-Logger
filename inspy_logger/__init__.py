@@ -44,14 +44,11 @@ def determine_level():
     global client_prog_name
     level = DEFAULT_LOGGING_LEVEL
 
-    _preemptive_set = check_preemptive_level_set()
-
-    if _preemptive_set:
+    if _preemptive_set := check_preemptive_level_set():
         level = translate_to_logging_level(_preemptive_set)
 
     if client_prog_name:
-        arg_parser = find_argument_parser()
-        if arg_parser:
+        if arg_parser := find_argument_parser():
             from inspy_logger.helpers.command_line import add_argument
             add_argument(arg_parser, level)
             args = arg_parser.parse_args()

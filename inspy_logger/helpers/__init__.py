@@ -134,11 +134,14 @@ def get_level_name(level: int) -> (str, None):
         None:
             If the logging level is not found.
     """
-    for level_name, level_value in LEVEL_MAP.items():
-        if level_value == level:
-            return level_name.upper()
-
-    return None
+    return next(
+        (
+            level_name.upper()
+            for level_name, level_value in LEVEL_MAP.items()
+            if level_value == level
+        ),
+        None,
+    )
 
 
 # def find_variable_in_call_stack(var_name, default=None):
@@ -224,8 +227,7 @@ def determine_client_prog_name() -> (str, None):
         '__PROG__'
     ]
     for var in valid_vars:
-        prog_name = find_variable_in_call_stack(var)
-        if prog_name:
+        if prog_name := find_variable_in_call_stack(var):
             if prog_name != __PROG__:
                 return prog_name
 
