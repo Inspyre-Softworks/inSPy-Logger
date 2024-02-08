@@ -50,7 +50,7 @@ inspy-logger-tool = "inspy_logger.Scripts.main:main"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.2.6"
-sphinx-autodoc-typehints = "^1.25.2"
+sphinx-autodoc-typehints = ">=1.25.2,<3.0.0"
 sphinxcontrib-napoleon = "^0.7"
 sphinx-rtd-theme = "^2.0.0"
 sphinxcontrib-argdoc = "^0.1.3"
