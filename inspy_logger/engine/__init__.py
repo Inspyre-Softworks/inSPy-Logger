@@ -14,6 +14,7 @@ class Logger(InspyLogger):
     """
 
     instances = {}  # A dictionary to hold instances of the Logger class.
+    __started = False
 
     def __new__(cls, name, *args, **kwargs):
         """
@@ -35,6 +36,7 @@ class Logger(InspyLogger):
     def __init__(
             self,
             name,
+            auto_start=False,
             console_level=DEFAULT_LOGGING_LEVEL,
             file_level=logging.DEBUG,
             filename="app.log",
@@ -46,6 +48,9 @@ class Logger(InspyLogger):
         Args:
             name (str):
                 The name of the logger instance.
+
+            auto_start (bool):
+                Should the logger start upon initialization. THIS CANNOT BE SET AFTER INITIALIZATION!
 
             console_level (str, optional):
                 The logging level for the console. Defaults to DEFAULT_LOGGING_LEVEL.
@@ -63,6 +68,7 @@ class Logger(InspyLogger):
         if hasattr(self, 'logger'):
             return
 
+        self.__auto_start = False
         self.__name = name
         self.logger = logging.getLogger(name)
         self.logger.setLevel(console_level)
@@ -80,6 +86,15 @@ class Logger(InspyLogger):
         self.logger.propagate = False
 
         self.children = []
+
+        self.__auto_start = auto_start
+
+        if self.auto_start:
+            self.start()
+
+    @property
+    def auto_start(self):
+        return self.__auto_start
 
     @property
     def console_level(self):
@@ -160,6 +175,36 @@ class Logger(InspyLogger):
                 The name of the logger instance.
         """
         return self.logger.name
+
+    @property
+    def started(self):
+        return self.__started
+
+    @started.setter
+    def started(self, new: bool):
+        """
+        Internal setter to set `started` with caller check.
+
+        Note:
+            This setter can only be used by members of this class!
+
+        Raises:
+            AttributeError:
+               When a non-class member attempts to use this setter.
+
+        """
+        if not isinstance(new, bool):
+            raise TypeError(f'`started` must be of type `bool` not {type(new).__name__}')
+        
+        caller_frame = inspect.currentframe().f_back
+        caller_name = caller_frame.f_code.co_name
+        caller_self = caller_frame.f_locals.get('self', None)
+
+        if not isinstance(caller_self, Logger) or caller_name.startswith('_'):
+            raise AttributeError('This property can only be set from within the class!')
+
+        self.__started = new
+
 
     def set_up_console(self):
         """
@@ -255,6 +300,11 @@ class Logger(InspyLogger):
 
         self.children.append(child_logger)
 
+        child_logger.started = self.started
+
+        if self.started:
+            child_logger.replay_and_setup_handlers()
+
         return child_logger
 
     def get_child_names(self) -> List:
@@ -344,6 +394,18 @@ class Logger(InspyLogger):
             message (str): The message to log.
         """
         self._log(logging.ERROR, message, args=(), stacklevel=2)
+
+    def start(self):
+        if self.started:
+            return
+
+        self.replay_and_setup_handlers()
+        self.started = True
+
+        for child in self.children:
+            child.started = True
+        
+        
 
     def __repr__(self):
         name = self.name

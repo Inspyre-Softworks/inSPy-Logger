@@ -69,4 +69,4 @@ if client_prog_name:
 InspyLogger = Logger
 
 
-LOG_DEVICE.replay_and_setup_handlers()
+#LOG_DEVICE.replay_and_setup_handlers()
