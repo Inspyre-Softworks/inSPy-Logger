@@ -1,5 +1,5 @@
 import inspect
-from inspy_logger import MOD_LOGGER, MOD_LOG_DEVICE, Logger
+from inspy_logger import LOG_DEVICE, Logger
 
 import inspect
 
@@ -36,7 +36,7 @@ def _get_parent_logging_device():
     Returns:
         Logger: The parent logging device.
     """
-    MOD_LOGGER.debug("Determining parent logging device")
+    LOG_DEVICE.debug("Determining parent logging device")
     caller_frame = inspect.currentframe().f_back
     caller_locals = caller_frame.f_locals
 
@@ -61,6 +61,16 @@ class Loggable:
     class_logger = None
 
     def __init__(self, parent_log_device=None, **kwargs):
+        """
+        Initializes an instance of the class.
+
+        Args:
+            parent_log_device (optional): The parent log device. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
+        """
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
         if self.parent_log_device is not None:
