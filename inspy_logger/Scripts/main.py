@@ -19,10 +19,12 @@ from inspy_logger.version import parse_version, PyPiVersionInfo
 
 
 # ---- SET UP PARSER --------------------------------
-
-parser = ArgumentParser('inspy-logger-version', description='Displays version information for inspy-logger.')
-
-parser.add_argument('-v', '--version', action='version', version=parse_version())
+=======
+from inspy_logger.version import parse_version, get_full_version_name, PyPiVersionInfo
+import sys
+from rich import print
+from rich.table import Table
+from argparse import ArgumentParser
 
 # ---- SET UP SUBPARSERS --------------------------------
 

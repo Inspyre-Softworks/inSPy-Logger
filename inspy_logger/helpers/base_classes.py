@@ -2,7 +2,6 @@ import inspect
 from inspy_logger import LOG_DEVICE, Logger
 
 
-
 class LoggableDescriptor:
     """
     Descriptor for accessing a logger specific to a class method.
@@ -21,10 +20,12 @@ class LoggableDescriptor:
                 method_name = frame_record.function
                 print(method_name)
                 break
+
         else:
             raise Exception("Could not determine the calling method's name.")
 
         # Get a child logger named after the class and method
+
         return instance.log_device.get_child(method_name)
 
 
@@ -35,7 +36,9 @@ def _get_parent_logging_device():
     Returns:
         Logger: The parent logging device.
     """
+    
     LOG_DEVICE.debug("Determining parent logging device")
+
     caller_frame = inspect.currentframe().f_back
     caller_locals = caller_frame.f_locals
 
@@ -60,6 +63,7 @@ class Loggable:
     class_logger = None
 
     def __init__(self, parent_log_device=None, **kwargs):
+
         """
         Initializes an instance of the class.
 
@@ -70,6 +74,7 @@ class Loggable:
         Returns:
             None
         """
+
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
         if self.parent_log_device is not None:

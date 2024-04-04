@@ -9,6 +9,7 @@ from inspy_logger.constants import LEVEL_MAP, DEFAULT_LOGGING_LEVEL
 from inspy_logger.helpers.decorators import validate_type
 from inspy_logger.helpers.descriptors import RestrictedSetter
 
+
 """
 This module contains utility functions and classes for handling logging and
 performing certain string and number operations.

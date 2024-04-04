@@ -20,7 +20,7 @@ def a_function(an_arg):
         an_arg (str): A string that the function will inject into a log line.
     
     """
-    log_name = PROG_NAME + '.a_function'
+    log_name = f'{PROG_NAME}.a_function'
     log = getLogger(log_name)
     debug = log.debug
     debug(f'Logger started for {log_name}!')
@@ -48,6 +48,7 @@ def start_root_logger():
     # Here we'll use the root logger to attempt to send a debug message to the console. If you don't see it
     # after runtime, don't worry; that's the behavior we are after. Remember; only messages of level 'info'
     # and higher will be output to the console if the log level is set to 'info'
+
     root_logger.debug(prefix + 'debug')
 
     # Now a message with level 'info'. This message should be visible at runtime.
@@ -63,6 +64,7 @@ def start_root_logger():
     _log = root_logger
     _log.error(f'{prefix}error')
     _log.exception(f'{prefix}exception')
+
     _log.critical(prefix + 'critical')
     _log.fatal(prefix + 'fatal')
     
