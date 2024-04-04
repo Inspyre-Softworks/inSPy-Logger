@@ -11,7 +11,6 @@ Since:
     v2.1.1
 
 """
-from typing import List, Tuple
 
 from inspy_logger.version import parse_version
 
@@ -21,3 +20,5 @@ __AUTHORS__: list[tuple[str, str]] = [
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
 ]
+
+SOFTWARE_ORG = __AUTHORS__[0][0]

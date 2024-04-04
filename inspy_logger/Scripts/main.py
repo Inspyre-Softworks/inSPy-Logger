@@ -16,6 +16,8 @@ from argparse import ArgumentParser
 from inspy_logger.helpers.debug.environment import fetch_system_info
 from inspy_logger.version import parse_version, PyPiVersionInfo
 
+
+
 # ---- SET UP PARSER --------------------------------
 
 parser = ArgumentParser('inspy-logger-version', description='Displays version information for inspy-logger.')
@@ -37,7 +39,7 @@ update_parser.add_argument('-p', '--pre-release', action='store_true', help='Whe
 debug_parser = subparsers.add_parser('debug', help='Fetches a collection of  environment information to help debug inspy-logger.')
 
 debug_parser.add_argument('-C', '--copy-to-clipboard', action='store_true', help='Copies the debug information to the clipboard.')
-debug_parser.add_argument('-P', '--print', action='store_true', help='Prints the debug information to the console.', default=True)
+debug_parser.add_argument('-P', '--print', action='store_true', help='Prints the debug information to the console.')
 
 # ---- FORMAT FLAGS --------------------------------
 
@@ -60,39 +62,35 @@ else:
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
 
 
+def debug(args = parsed_args):
+    if args.markdown:
+        fmt = 'markdown'
+    elif args.json:
+        fmt = 'json'
+    else:
+        fmt = 'text'
+
+    fetch_system_info(copy_to_clipboard=args.copy_to_clipboard, format_type=fmt, print_to_console=args.print)
+
+
+
 def main():
 
-    version = PyPiVersionInfo()
+    version = PyPiVersionInfo(INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK)
 
     ACTIONS = {
         'default': version.print_version_info,
         'update': version.update,
-        'debug': fetch_system_info,
+        'debug': debug,
 
     }
 
     if parsed_args.subcommand is None:
         parsed_args.subcommand = 'default'
 
-    if parsed_args.subcommand == 'debug':
+    # Run the action.
+    ACTIONS[parsed_args.subcommand]()
 
-        if (
-            parsed_args.markdown
-            or not parsed_args.json
-            and not parsed_args.text
-        ):
-            fmt = 'markdown'
-        elif parsed_args.json:
-            fmt = 'json'
-        else:
-            fmt = 'text'
-
-        fetch_system_info(copy_to_clipboard=parsed_args.copy_to_clipboard, format_type=fmt, print_to_console=parsed_args.print)
-
-
-
-
-    return parsed_args
 
 if __name__ == '__main__':
     main()
