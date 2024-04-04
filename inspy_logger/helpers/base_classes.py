@@ -1,7 +1,5 @@
 import inspect
-from inspy_logger import MOD_LOGGER, MOD_LOG_DEVICE, Logger
-
-import inspect
+from inspy_logger import LOG_DEVICE, Logger
 
 
 class LoggableDescriptor:
@@ -18,15 +16,17 @@ class LoggableDescriptor:
         stack = inspect.stack()
         # Start from 1 to skip the current __get__ frame
         for frame_record in stack[1:]:
-            if 'self' in frame_record.frame.f_locals:
-                if frame_record.frame.f_locals['self'] is instance:
-                    method_name = frame_record.function
-                    break
+            if 'self' in frame_record.frame.f_locals and frame_record.frame.f_locals['self'] is instance:
+                method_name = frame_record.function
+                print(method_name)
+                break
+
         else:
             raise Exception("Could not determine the calling method's name.")
 
         # Get a child logger named after the class and method
-        return instance.log_device.get_child()
+
+        return instance.log_device.get_child(method_name)
 
 
 def _get_parent_logging_device():
@@ -36,7 +36,9 @@ def _get_parent_logging_device():
     Returns:
         Logger: The parent logging device.
     """
-    MOD_LOGGER.debug("Determining parent logging device")
+    
+    LOG_DEVICE.debug("Determining parent logging device")
+
     caller_frame = inspect.currentframe().f_back
     caller_locals = caller_frame.f_locals
 
@@ -61,6 +63,18 @@ class Loggable:
     class_logger = None
 
     def __init__(self, parent_log_device=None, **kwargs):
+
+        """
+        Initializes an instance of the class.
+
+        Args:
+            parent_log_device (optional): The parent log device. Defaults to None.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            None
+        """
+
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
         if self.parent_log_device is not None:

@@ -12,12 +12,15 @@ Since:
 
 """
 from inspy_logger.version import parse_version
+from inspy_logger.version import parse_version
 
-__prog__ = 'inSPy-Logger'
-__version__ = parse_version()
-__authors__ = [
+__PROG__ = 'inSPy-Logger'
+__VERSION__: str = parse_version()
+__AUTHORS__: list[tuple[str, str]] = [
+
         ('Inspyre-Softworks', 'https://inspyre.tech'),
         ('Taylor-Jayde Blackstone', '<t.blackstone@inspyre.tech')
 ]
 
-'
+SOFTWARE_ORG = __AUTHORS__[0][0]
+

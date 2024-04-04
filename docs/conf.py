@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.abspath('../'))
 
 project = 'inspy-logger'
 copyright = '2023, Inspyre-Softworks, Taylor B.'
-author = 'Inspyre-Softworks, Taylor B.'
-release = '3.0.dev.4'
+author = 'Inspyre-Softworks'
+release = '3.1.0-dev1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
