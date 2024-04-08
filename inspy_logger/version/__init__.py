@@ -1,3 +1,4 @@
+import contextlib
 import requests
 from packaging import version as pkg_version
 import sys
@@ -159,17 +160,14 @@ class VersionParser:
 
     def print_version(self, skip_rich=False):
         if not skip_rich:
-            try:
+            with contextlib.suppress(ImportError):
                 self.__rich__()
                 return
-            except ImportError:
-                pass
-
         self._print_version()
 
     def _print_version(self):
         version_info = self.version_info
-        print()
+        print(version_info)
 
     def __str__(self):
         return self.version_str
