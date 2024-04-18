@@ -220,9 +220,6 @@ class VersionParser:
         return self.version_info['release_num']
 
 
-print(__file__)
-
-
 def parse_version_file():
     with open(Path(__file__).parent.joinpath('VERSION.txt'), 'r') as f:
         return VersionParser(f.read().strip())

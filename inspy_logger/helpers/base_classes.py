@@ -2,7 +2,6 @@ import inspect
 from inspy_logger import LOG_DEVICE, Logger
 
 
-
 class LoggableDescriptor:
     """
     Descriptor for accessing a logger specific to a class method.
@@ -19,7 +18,7 @@ class LoggableDescriptor:
         for frame_record in stack[1:]:
             if 'self' in frame_record.frame.f_locals and frame_record.frame.f_locals['self'] is instance:
                 method_name = frame_record.function
-                print(method_name)
+
                 break
         else:
             raise Exception("Could not determine the calling method's name.")
@@ -72,6 +71,7 @@ class Loggable:
         """
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
+
         if self.parent_log_device is not None:
             self.__log_device = self.parent_log_device.get_child(self.__log_name)
         else:
@@ -106,14 +106,15 @@ class Loggable:
         Returns:
             Logger: An instance of the Logger class that represents the child logger.
         """
-        if not override:
-            self.__is_member__()
-
         if name is None:
             name = inspect.stack()[1][
                 3
-            ]  # Get the name of the calling function if no name is provided
-        #print(inspect.stack()[1])
+            ]
+        if self.log_device.has_child(name):
+            return self.log_device.find_child_by_name(name)
+        if not override:
+            self.__is_member__()
+
         return self.log_device.get_child(name)
 
     def __is_member__(self):
@@ -123,8 +124,12 @@ class Loggable:
         Raises:
             PermissionError: If the caller of this method is not a member of the same class.
         """
+        print(self.log_device.children)
+        log_name = f'{self.log_device.name}.__is_member__'
+
+
         log_device = self.log_device.get_child("__is_member__")
-        log = log_device.logger
+        log = log_device
 
         current_frame = inspect.currentframe()
         log.debug(f"Current frame: {current_frame}")

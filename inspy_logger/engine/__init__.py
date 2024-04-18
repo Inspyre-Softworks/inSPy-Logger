@@ -6,6 +6,7 @@ import sys
 from rich.logging import RichHandler
 
 from inspy_logger.config import DEFAULT_LOG_FILE_PATH
+from inspy_logger.constants import LEVELS, INTERACTIVE_SESSION, INTERNAL
 from inspy_logger.engine.handlers import BufferingHandler
 from inspy_logger.common import InspyLogger, DEFAULT_LOGGING_LEVEL
 from inspy_logger.helpers import translate_to_logging_level, CustomFormatter, get_level_name, RestrictedSetter
@@ -20,6 +21,8 @@ class Logger(InspyLogger):
     A Singleton class responsible for managing the logging mechanisms of the application.
     """
 
+    LEVELS = LEVELS
+    INTERACTIVE_SESSION = INTERACTIVE_SESSION
     instances = {}  # A dictionary to hold instances of the Logger class.
 
     # Set the file path for the log file.
@@ -52,6 +55,7 @@ class Logger(InspyLogger):
             file_path=DEFAULT_LOG_FILE_PATH.parent,
             no_file_logging=False,
             parent=None,
+            skip_interactive_check: bool=False
     ):
         """
         Initializes a logger instance.
@@ -93,8 +97,8 @@ class Logger(InspyLogger):
         self.__no_file_logging = None
         self.__file_path = None
 
+
         self.logger = logging.getLogger(name)
-        self.logger.debug('Debug message from logger')
         self.logger.setLevel(translate_to_logging_level(console_level))
 
         self.logger.propagate = False
@@ -103,9 +107,9 @@ class Logger(InspyLogger):
         if 'inSPy-Logger' in self.logger.name:
             self.buffering_handler = BufferingHandler()
             self.logger.addHandler(self.buffering_handler)
-            self.logger.debug('Initializing logger with buffering handler.')
+            self.internal('Initializing logger with buffering handler.')
         else:
-            self.logger.debug('Initializing  logger without buffering handler.')
+            self.internal('Initializing  logger without buffering handler.')
 
         self.no_file_logging = no_file_logging
 
@@ -167,6 +171,7 @@ class Logger(InspyLogger):
 
     @property
     def console_level_name(self):
+        self.internal('Test message')
         return get_level_name(self.console_level)
 
     @property
@@ -243,6 +248,10 @@ class Logger(InspyLogger):
     #             raise e
 
     @property
+    def interactive_session(self):
+        return hasattr(sys, 'ps1') and sys.ps1
+
+    @property
     def name(self):
         """
         Returns the name of the logger instance.
@@ -304,6 +313,22 @@ class Logger(InspyLogger):
 
                 return handler
 
+    def has_child(self, name):
+        """
+        Checks if the logger has a child with the specified name.
+
+        Args:
+            name (str):
+                The name of the child logger.
+
+        Returns:
+            bool:
+                True if the logger has a child with the specified name, else False.
+        """
+
+        return name in self.child_names
+
+
     @validate_type(str, Path, preferred_type=Path)
     def set_file_path(self, file_path):
         """
@@ -321,14 +346,12 @@ class Logger(InspyLogger):
             self.file_path = old
             raise
 
-
-
     def set_up_console(self):
         """
         Configures and attaches a console handler to the logger.
         """
 
-        self.logger.debug("Setting up console handler")
+        self.internal("Setting up console handler")
         console_handler = RichHandler(
             show_level=True, markup=True, rich_tracebacks=True, tracebacks_show_locals=True
         )
@@ -367,7 +390,7 @@ class Logger(InspyLogger):
             None
         """
 
-        self.logger.debug("Setting log levels")
+        self.internal("Setting log levels")
 
         # If we received a console level, update the console level.
         if console_level is not None:
@@ -419,6 +442,14 @@ class Logger(InspyLogger):
             InspyLogger:
                 The child logger with the specified name, console level, and file level.
         """
+        # Get the name of the calling function if no name is provided
+        caller_frame = inspect.stack()[1]
+
+        cl_name = self.__build_name_from_caller(caller_frame, name)
+
+        if found_child := self.find_child_by_name(cl_name, exact_match=True):
+            return found_child
+
         # Determine the console level and file level for the child logger.
 
         # If the console level is not provided, use the console level of the parent logger
@@ -426,18 +457,6 @@ class Logger(InspyLogger):
 
         # If the file level is not provided, use the file level of the parent logger
         file_level = file_level or self.file_level
-
-        # Get the name of the calling function if no name is provided
-        caller_frame = inspect.stack()[1]
-
-        cl_name = self.__build_name_from_caller(caller_frame, name)
-
-        cl_name
-
-        found_child = self.find_child_by_name(cl_name, exact_match=True)
-
-        if found_child:
-            return found_child
 
         child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self)
 
@@ -451,7 +470,7 @@ class Logger(InspyLogger):
         Fetches the names of all child loggers associated with this logger instance.
         """
 
-        self.logger.debug("Getting child logger names")
+        self.internal("Getting child logger names")
         return [child.logger.name for child in self.children]
 
     def get_parent(self) -> InspyLogger:
@@ -459,7 +478,7 @@ class Logger(InspyLogger):
         Fetches the parent logger associated with this logger instance.
         """
 
-        self.logger.debug("Getting parent logger")
+        self.internal("Getting parent logger")
         return self.parent
 
     def find_child_by_name(self, name: str, case_sensitive=True, exact_match=False) -> (List, InspyLogger):
@@ -481,7 +500,7 @@ class Logger(InspyLogger):
                             If exact_match is False, returns a list of Logger instances whose names contain the
                             search term.
         """
-        self.logger.debug(f'Searching for child with name: {name}')
+        self.internal(f'Searching for child with name: {name}')
         results = []
 
         if not case_sensitive:
@@ -497,14 +516,17 @@ class Logger(InspyLogger):
         return results
 
     @count_invocations
-    def debug(self, message):
+    def debug(self, message, stack_level=3):
         """
         Logs a debug message.
 
         Args:
-          message (str): The message to log.
+            message (str): The message to log.
+
+            stack_level (int, optional):
+                The stacklevel to use when logging. Defaults to 3.
         """
-        self._log(logging.DEBUG, message, args=(), stacklevel=2)
+        self._log(logging.DEBUG, message, args=(), stacklevel=stack_level)
 
     @count_invocations
     def info(self, message):
@@ -515,6 +537,16 @@ class Logger(InspyLogger):
             message (str): The message to log.
         """
         self._log(logging.INFO, message, args=(), stacklevel=2)
+
+    def internal(self, message, *args, **kwargs):
+        """
+        Logs an internal message.
+
+        Args:
+            message (str): The message to log.
+        """
+        if self.logger.isEnabledFor(INTERNAL):
+            self._log(INTERNAL, message, args=args, stacklevel=2)
 
     @count_invocations
     def warning(self, message):
@@ -624,7 +656,7 @@ class Logger(InspyLogger):
         """
         Starts the logger.
         """
-        self.logger.warning('InspyLogger.start() is deprecated.')
+        self.warning('InspyLogger.start() is deprecated.')
         if not self.logger.handlers:
             self.set_up_handlers()
 
@@ -656,6 +688,11 @@ class Logger(InspyLogger):
         """
         Low-level logging implementation, passing stacklevel to findCaller.
         """
+        #caller_frame = inspect.currentframe().f_back
+        #print(caller_frame.f_code.co_name)
+        if INTERACTIVE_SESSION:
+            stacklevel -= 1
+
         if self.logger.isEnabledFor(level):
             self.logger._log(level, msg, args, exc_info, extra, stack_info, stacklevel + 1)
 

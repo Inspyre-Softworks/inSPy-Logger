@@ -15,11 +15,14 @@ Description:
     
 
 """
+
+
 import logging
 
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
 
 LEVEL_MAP = {
+    'internal': 5,
     'debug': logging.DEBUG,
     'info': logging.INFO,
     'warning': logging.WARNING,
@@ -28,3 +31,12 @@ LEVEL_MAP = {
     'fatal': logging.FATAL,
 }
 """A mapping of level names to their corresponding logging levels."""
+
+
+LEVELS = [level.upper() for level in LEVEL_MAP]
+
+INTERNAL = LEVEL_MAP['debug'] - 5
+
+
+INTERACTIVE_SESSION = __name__ != '__main__'
+"""A flag to indicate whether the session is interactive."""

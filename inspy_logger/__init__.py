@@ -56,6 +56,8 @@ CLIENT_PROG_NAME = determine_client_prog_name()
 
 INIT_LOG_LEVEL = determine_level(CLIENT_PROG_NAME)
 
+INTERACTIVE_SESSION = find_variable_in_call_stack('INSPY_INTERACTIVE_SESSION', default=False)
+
 
 def start_logger(override_block=True):
     """

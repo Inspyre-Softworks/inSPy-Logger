@@ -27,6 +27,27 @@ __all__ = [
 ]
 
 
+def property_logging(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.creating_logger:
+            return
+        if found := self.class_logger.find_child_by_name(func.__name__, exact_match=True):
+            log = found
+        else:
+            self.creating_logger = True
+            log = self.class_logger.add_child(func.__name__)
+            self.creating_logger = False
+
+        log.debug(f'Getting {func.__name__} from instance of {self.__class__.__name__}...', stack_level=4)
+        res = func(self, *args, **kwargs)
+        log.debug(f'Got {func.__name__} from instance of {self.__class__.__name__}: {res}', stack_level=4)
+
+        return res
+    return wrapper
+
+
+
 def method_alias(*alias_names: (str, list[str])):
     """
     A decorator that allows you to add aliases to a class's method.
@@ -162,7 +183,7 @@ def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case
     def decorator(func):
         @wraps(func)
         def wrapper(self, value):
-            if not isinstance(value, allowed_types):
+            if not isinstance(value, tuple(allowed_types)):
                 allowed = ', '.join([t.__name__ for t in allowed_types])
                 raise TypeError(f"Value must be of type {allowed}, got type {type(value).__name__}")
 

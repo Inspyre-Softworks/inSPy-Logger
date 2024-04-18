@@ -70,7 +70,7 @@ LEVELS = list(LEVEL_MAP.values())
 """The list of level names."""
 
 
-DEFAULT_LOGGING_LEVEL = logging.DEBUG
+DEFAULT_LOGGING_LEVEL = logging.INFO
 """The default logging level."""
 
 
