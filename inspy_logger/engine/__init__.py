@@ -32,7 +32,7 @@ class Logger(InspyLogger):
         """
         Creates or returns an existing instance of the Logger class for the provided name.
 
-        Args:
+        Parameters:
             name (str): The name of the logger instance.
 
         Returns:
@@ -160,7 +160,7 @@ class Logger(InspyLogger):
         """
         Sets the logging level for the console.
 
-        Args:
+        Parameters:
             level:
                 The logging level for the console.
 
@@ -203,7 +203,7 @@ class Logger(InspyLogger):
         """
         Sets the logging level for the file.
 
-        Args:
+        Parameters:
             level: The logging level for the file.
 
         Returns:
@@ -225,7 +225,7 @@ class Logger(InspyLogger):
     #     """
     #     Sets file-path for the log-file.
     #
-    #     Args:
+    #     Parameters:
     #         new (str, Path):
     #             The new file-path for the log-file.
     #
@@ -317,7 +317,7 @@ class Logger(InspyLogger):
         """
         Checks if the logger has a child with the specified name.
 
-        Args:
+        Parameters:
             name (str):
                 The name of the child logger.
 
@@ -334,7 +334,7 @@ class Logger(InspyLogger):
         """
         Sets the file path for the logger.
 
-        Args:
+        Parameters:
             file_path (str):
                 The path to the log file.
         """
@@ -366,6 +366,7 @@ class Logger(InspyLogger):
         """
         Configures and attaches a file handler to the logger.
         """
+        
         self.ensure_log_file_path()
         file_handler = logging.FileHandler(self.file_path)
         file_handler.setLevel(self.__file_level)
@@ -375,16 +376,19 @@ class Logger(InspyLogger):
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-    def set_level(self, console_level=None, file_level=None) -> None:
+    def set_level(self, console_level=None, file_level=None, override=False) -> None:
         """
         Updates the logging levels for both console and file handlers.
 
-        Args:
+        Parameters:
             console_level:
                 The logging level for the console.
 
             file_level:
                 The logging level for the file.
+                
+            override (bool):
+                Whether to override the `no_file_logging` option. Defaults to `False`.
 
         Returns:
             None
@@ -428,7 +432,7 @@ class Logger(InspyLogger):
         """
         Retrieves a child logger with the specified name, console level, and file level.
 
-        Args:
+        Parameters:
             name (str, optional):
                 The name of the child logger. Defaults to None.
 
@@ -485,7 +489,7 @@ class Logger(InspyLogger):
         """
         Searches for a child logger by its name.
 
-        Args:
+        Parameters:
             name (str):
                 The name of the child logger to search for.
 
@@ -520,7 +524,7 @@ class Logger(InspyLogger):
         """
         Logs a debug message.
 
-        Args:
+        Parameters:
             message (str): The message to log.
 
             stack_level (int, optional):
@@ -533,7 +537,7 @@ class Logger(InspyLogger):
         """
         Logs an info message.
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.INFO, message, args=(), stacklevel=2)
@@ -542,7 +546,7 @@ class Logger(InspyLogger):
         """
         Logs an internal message.
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         if self.logger.isEnabledFor(INTERNAL):
@@ -554,7 +558,7 @@ class Logger(InspyLogger):
         Logs a warning message.
 
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.WARNING, message, args=(), stacklevel=2)
@@ -565,7 +569,7 @@ class Logger(InspyLogger):
         Logs an error message.
 
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.ERROR, message, args=(), stacklevel=2)
@@ -670,7 +674,7 @@ class Logger(InspyLogger):
         """
         Determines the in-project path of the module from the call frame.
 
-        Args:
+        Parameters:
             frame:
                 The frame from which to determine the module path.
 

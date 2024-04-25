@@ -176,7 +176,7 @@ class CustomFormatter(Formatter):
         """
         Replaces <ipython-input-...> pattern in record.pathname with 'iPython'.
 
-        Args:
+        Parameters:
             record (logging.LogRecord): The record to format.
 
         Returns:
@@ -193,7 +193,7 @@ def clean_module_name(module_name):
     """
     Replaces <ipython-input-...> pattern in the given module name with 'iPython'.
 
-    Args:
+    Parameters:
         module_name (str): The module name to clean.
 
     Returns:
@@ -232,7 +232,7 @@ def is_number(string, force_integer=False, rounding=None):
     Checks if a given string can be converted to a number and optionally
     rounds or converts the result to an integer.
 
-    Args:
+    Parameters:
         string (str): The string to check.
         force_integer (bool, optional): If True, the result will be converted to an integer.
         rounding (int, optional): The number of decimal places to round to.
@@ -283,7 +283,7 @@ def translate_to_logging_level(level_str):
     """
     Translates a given string to a logging level.
 
-    Args:
+    Parameters:
         level_str (str): The string to translate.
 
     Returns:
@@ -302,7 +302,7 @@ def get_level_name(level: int) -> (str, None):
     """
     Gets the name of the logging level.
 
-    Args:
+    Parameters:
         level (int):
             The logging level.
 
@@ -327,7 +327,7 @@ def get_level_name(level: int) -> (str, None):
 #     """
 #     Searches for a variable in the namespaces of all modules in the call stack.
 #
-#     Args:
+#     Parameters:
 #         var_name (str): The name of the variable to find.
 #         default: Default value to return if the variable is not found.
 #
@@ -355,7 +355,7 @@ def find_variable_in_call_stack(var_name, ignore_inspy_logger: bool = False, def
     """
     Searches for a variable in the namespaces of all modules in the call stack.
 
-    Args:
+    Parameters:
         var_name (str): The name of the variable to find.
         ignore_inspy_logger (bool): Whether to ignore variables from the Inspy-Logger module.
         default: Default value to return if the variable is not found.
@@ -392,7 +392,7 @@ def iterate_valid_vars(valid_vars, mode='strict'):
     """
     Iterates through the valid variables based on the mode.
 
-    Args:
+    Parameters:
         valid_vars (list): The list of valid variables to iterate through.
         mode (str, optional): The mode to use. Defaults to 'strict'.
 

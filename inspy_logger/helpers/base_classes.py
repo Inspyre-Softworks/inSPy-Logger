@@ -62,7 +62,7 @@ class Loggable:
         """
         Initializes an instance of the class.
 
-        Args:
+        Parameters:
             parent_log_device (optional): The parent log device. Defaults to None.
             **kwargs: Additional keyword arguments.
 

@@ -52,7 +52,7 @@ def method_alias(*alias_names: (str, list[str])):
     """
     A decorator that allows you to add aliases to a class's method.
 
-    Args:
+    Parameters:
         *alias_names (str, list[str]):
             The name(s) of the alias(es) to add.
 
@@ -71,7 +71,7 @@ def method_logger(func):
     """
     A decorator to log a method's execution.
 
-    Args:
+    Parameters:
         func (method):
             The method to log.
 
@@ -101,7 +101,7 @@ def add_aliases(cls):
     """
     A decorator to add aliases to a class's methods.
 
-    Args:
+    Parameters:
         cls (class):
             The class to add aliases to.
 
@@ -120,7 +120,7 @@ def count_invocations(method):
     """
     Decorator that counts the number of invocations of the method it decorates.
 
-    Args:
+    Parameters:
         method (Callable):
             The method to count invocations for.
 
@@ -146,7 +146,7 @@ def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case
     property setter, with an option to convert to a preferred type if specified and to enforce
     value restrictions.
 
-    Args:
+    Parameters:
         preferred_type (type, optional): The preferred type to which values should be converted
                                           if possible. If None, no conversion is attempted.
         *allowed_types: Variable length list of allowed types for the property value.
@@ -215,7 +215,7 @@ def validate_func_args(*validators):
     A decorator for validating the type and optionally the value of arguments passed to a function.
     Each argument can have its own set of allowed types, a preferred type, and allowed values.
 
-    Args:
+    Parameters:
         *validators (dict): Each dictionary in validators specifies the validation rules for one argument.
                             The keys in the dictionary can be:
                             - 'allowed_types': A tuple of allowed types for the argument.
