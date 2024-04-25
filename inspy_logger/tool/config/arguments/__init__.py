@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from inspy_logger.version import parse_version
+from inspy_logger.version import get_local_version
 
 
 class Arguments(ArgumentParser):
@@ -12,7 +12,7 @@ class Arguments(ArgumentParser):
 
 parser = ArgumentParser('inspy-logger-version', description='Displays version information for inspy-logger.')
 
-parser.add_argument('-v', '--version', action='version', version=parse_version())
+parser.add_argument('-v', '--version', action='version', version=get_local_version())
 
 # ---- SET UP SUBPARSERS --------------------------------
 

@@ -15,7 +15,7 @@ inspy\_logger.version
       :toctree:
    
       get_full_version_name
-      parse_version
+      get_local_version
    
    
 
@@ -28,12 +28,3 @@ inspy\_logger.version
       :template: custom-class-template.rst
    
       PyPiVersionInfo
-   
-   
-
-   
-   
-   
-
-
-

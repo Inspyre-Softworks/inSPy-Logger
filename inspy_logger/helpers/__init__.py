@@ -32,6 +32,9 @@ __all__ = [
     "VALID_PROG_NAME_VARS",
     'determine_log_file_path',
     'determine_log_filepath',
+    'RestrictedSetter',
+    'validate_type',
+    'ValidVars'
 ]
 
 

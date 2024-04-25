@@ -1,3 +1,4 @@
+import importlib_metadata
 import contextlib
 import requests
 from packaging import version as pkg_version
@@ -7,6 +8,13 @@ from rich import print
 from typing import Optional, Literal
 import re
 from pathlib import Path
+from inspy_logger import initialized
+import importlib
+
+if initialized:
+    from inspy_logger import InspyLogger
+
+    MOD_LOGGER = InspyLogger('inspyre-toolbox.version')
 
 
 # Constants
@@ -17,6 +25,31 @@ RELEASE_MAP = {
     'rc': 'Release Candidate Build',
     'final': 'Final Release Build'
 }
+
+import importlib_metadata
+from inspy_logger.common.meta.helpers.api.cache import cached_request
+
+
+@cached_request
+def get_package_info(package_name):
+    try:
+        # Get the distribution information for the package
+        distribution = importlib_metadata.distribution(package_name)
+
+        # Get the dependencies from the distribution metadata
+        dependencies = distribution.requires
+
+        # Get the installed version of the package
+        installed_version = distribution.version
+
+        # Return the dependencies and installed version as a dictionary
+        return {
+            "dependencies": dependencies,
+            "installed_version": installed_version
+        }
+    except importlib_metadata.PackageNotFoundError:
+        print(f"Package '{package_name}' not found.")
+        return None
 
 
 def get_full_version_name():
@@ -32,7 +65,7 @@ def get_full_version_name():
     return VERSION_PARSER.to_full_version_string()
 
 
-def parse_version():
+def get_local_version():
     """
     Parses the version information into a string.
 
@@ -242,7 +275,7 @@ class PyPiVersionInfo:
         v3.0
     """
     __url = 'https://pypi.org/pypi/inspy-logger/json'
-    __installed = parse_version()
+    __installed = get_local_version()
     __checked_for_update = False
     __newer_available_version = None
 
@@ -250,6 +283,7 @@ class PyPiVersionInfo:
         self.__latest_stable = None
         self.__latest_pre_release = None
         self.__all_versions = None
+        self.__raw_api_data = None
         self.include_pre_release_for_update_check = include_pre_release_for_update_check
         self.__query_versions()
 
@@ -318,6 +352,8 @@ class PyPiVersionInfo:
             response.raise_for_status()
             data = response.json()
 
+            self.__raw_api_data = data
+
             self.__all_versions = list(data['releases'].keys())
             self.__latest_stable = data['info']['version']
         except requests.RequestException as e:
@@ -325,16 +361,24 @@ class PyPiVersionInfo:
             print(f"Error querying PyPi: {e}")
 
     @property
+    def raw_api_data(self):
+        return self.__raw_api_data
+
+    @property
     def update_available(self):
         """
         Checks if an update is available.
         """
+
         if self.__newer_available_version is None:
             self.check_for_update()
         return self.__newer_available_version is not None
 
-    def check_for_update(self, include_pre_releases=False):
+    def check_for_update(self, include_pre_releases=None):
         latest_version = self.latest_stable
+
+        if include_pre_releases is None:
+            include_pre_releases = self.include_pre_release_for_update_check
 
         if include_pre_releases or self.include_pre_release_for_update_check:
             latest_version = max(latest_version, self.latest_pre_release)
@@ -360,9 +404,16 @@ class PyPiVersionInfo:
         """
         return self.all_versions if include_pre_release else [v for v in self.all_versions if not v.is_prerelease]
 
-    def update(self):
+    def update(self, more_info=False, include_pre_releases=None):
         """
         Checks for updates to inspy-logger.
+
+        Parameters:
+            more_info (bool, optional):
+                A flag to print more information about the update check. Defaults to False.
+
+            include_pre_releases (bool, optional):
+                A flag to include pre-release versions in the update check. Defaults to None.
 
         Returns:
             None`
@@ -370,6 +421,10 @@ class PyPiVersionInfo:
         Since:
             v3.0
         """
+        from rich import print
+
+        if include_pre_releases is not None:
+            self.include_pre_release_for_update_check = include_pre_releases
 
         local_newer_statement = 'Local version is newer than latest version. This is likely a development build.'
 
@@ -378,13 +433,20 @@ class PyPiVersionInfo:
 
         try:
             if self.update_available:
-                print(f'\n\n[bold green]Update Available![/bold green]\nNew version: '
-                      f'[bold cyan]{self.update_available}[/bold cyan]')
+                print('\n')
+                print('[bold green]Update Available![/bold green]')
+                print(f'New version: [bold cyan]{self.newer_available_version}[/bold cyan]')
             else:
-                print(f'\n\n[bold green]No update available.[/bold green]\nCurrent version: '
-                      f'[bold cyan]{parse_version()}[/bold cyan]\n{local_newer_statement}')
+                print('\n[bold green]No update available.[/bold green]\n')
 
-            print('\n')
+            print(f'Current version: [bold cyan]{get_local_version()}[/bold cyan]')
+            print(local_newer_statement)
+
+            if more_info:
+                print(f'\nLatest stable version: [bold cyan]{self.latest_stable}[/bold cyan]')
+                print(f'Latest pre-release version: [bold cyan]{self.latest_pre_release}[/bold cyan]')
+                all_versions = '\n'.join(self.__all_versions)
+                print(f'All versions:\n{all_versions}\n')
 
         except Exception as e:
             print(f'An error occurred during the update check: {str(e)}')
@@ -473,7 +535,7 @@ class PyPiVersionInfo:
         table.add_column('Value', justify='center')
 
         # Add rows
-        table.add_row('Version', parse_version(), )
+        table.add_row('Version', get_local_version(), )
         table.add_row('Full Version Name', get_full_version_name())
 
         if self.update_available:

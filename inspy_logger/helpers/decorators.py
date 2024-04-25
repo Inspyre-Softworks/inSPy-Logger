@@ -140,20 +140,42 @@ def count_invocations(method):
     return wrapper
 
 
-def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case_sensitive=True):
+def validate_type(
+        *allowed_types,
+        preferred_type=None,
+        allowed_values=None,
+        case_sensitive=True,
+        lock_after_setting=False
+):
     """
     A decorator for validating the type and optionally the value of a value passed to a class
     property setter, with an option to convert to a preferred type if specified and to enforce
     value restrictions.
 
-    Args:
-        preferred_type (type, optional): The preferred type to which values should be converted
-                                          if possible. If None, no conversion is attempted.
-        *allowed_types: Variable length list of allowed types for the property value.
-        allowed_values (iterable, optional): An iterable of values that are allowed. If None,
-                                             all values of the correct type are allowed.
-        case_sensitive (bool, optional): Specifies whether string comparisons should be case
-                                         sensitive. Defaults to True. Ignored for non-string types.
+    Parameters:
+
+        preferred_type (type, optional):
+            The preferred type to which values should be converted, if possible.
+
+            - If `NoneType`, no conversion is attempted.
+
+        *allowed_types (List[type], optional):
+            Variable length list of allowed types for the property value.
+
+        allowed_values (List[Any], optional):
+            An iterable of values that are allowed.
+
+            - If None, all values of the correct type are allowed.
+
+        case_sensitive (bool, optional):
+            Specifies whether string comparisons should be case-sensitive.
+            (Optional, defaults to `True`)
+
+            - **Ignored for non-string types**
+
+        lock_after_setting (bool, optional):
+            Whether to lock the property value after it has been set.
+            Defaults to False.
 
     Returns:
         A decorator function for the property setter.
@@ -169,7 +191,8 @@ def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case
         ...     def my_property(self):
         ...         return self._my_property
         ...
-        ...     @my_property.setter
+        ...
+        @my_property.setter
         ...     @validate_type(str, allowed_values=["hello", "world"], case_sensitive=False)
         ...     def my_property(self, value):
         ...         self._my_property = value
@@ -183,6 +206,7 @@ def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case
     def decorator(func):
         @wraps(func)
         def wrapper(self, value):
+            print(hex(id(self)))
             if not isinstance(value, tuple(allowed_types)):
                 allowed = ', '.join([t.__name__ for t in allowed_types])
                 raise TypeError(f"Value must be of type {allowed}, got type {type(value).__name__}")

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+
+initialized = False
+
 import contextlib
 import sys
 import inspect
 import logging
 from pypattyrn.behavioral.null import Null
-from inspy_logger.common import PROG_NAME as ISL_PROG_NAME, DEFAULT_LOGGING_LEVEL, DEFAULT_LOG_FILE_PATH, LEVELS
+from inspy_logger.common import PROG_NAME as ISL_PROG_NAME, DEFAULT_LOGGING_LEVEL, LEVELS
+from inspy_logger.config.dirs import DEFAULT_LOG_FILE_PATH
 from inspy_logger.helpers import find_variable_in_call_stack, check_preemptive_level_set, find_argument_parser, determine_start_block, determine_level
 
 from inspy_logger.helpers import (
@@ -135,3 +139,6 @@ def getLogger(*args, **kwargs):
         deprecation_warning_deliveries += 1
 
     return InspyLogger(*args, **kwargs)
+
+
+initialized=True

@@ -37,6 +37,11 @@ LEVELS = [level.upper() for level in LEVEL_MAP]
 
 INTERNAL = LEVEL_MAP['debug'] - 5
 
+API_URL_BASE = 'https://pypi.org/pypi/'
+API_SUFFIX = '/json'
+
 
 INTERACTIVE_SESSION = __name__ != '__main__'
 """A flag to indicate whether the session is interactive."""
+
+DEFAULT_LOG_FORMAT = "%(asctime)s - [%(name)s] - %(levelname)s - %(message)s |-| %(file_name)s:%(lineno)d"

@@ -50,18 +50,24 @@ Example Usage:
 """
 
 import logging
+from pathlib import Path
+from typing import Union
 
-from inspy_logger.__about__ import __PROG__ as PROG_NAME, __VERSION__ as PROG_VERSION
-from inspy_logger.config.dirs import DEFAULT_LOG_FILE_PATH
+
+
+from inspy_logger.__about__ import __PROG__ as PROG_NAME
 from inspy_logger.constants import LEVEL_MAP
+from inspy_logger.helpers.debug.system.session import is_interactive
+from inspy_logger.helpers.logging import (
+    build_name_from_caller
+)
+from inspy_logger.helpers.decorators import validate_type
 
 __all__ = [
     "PROG_NAME",
-    "PROG_VERSION",
     "LEVEL_MAP",
     "LEVELS",
     "DEFAULT_LOGGING_LEVEL",
-    "DEFAULT_LOG_FILE_PATH",
     "InspyLogger"
 ]
 
@@ -75,4 +81,38 @@ DEFAULT_LOGGING_LEVEL = logging.INFO
 
 
 class InspyLogger:
-    pass
+
+    def __init__(
+            self,
+            name: str,
+            auto_set_up: bool = None,
+            console_level: int = DEFAULT_LOGGING_LEVEL,
+            file_level: int = logging.DEBUG,
+            file_name: Union[str, Path] = None,
+    ):
+        self.__name = None
+
+
+        self.name = name
+
+
+
+    @property
+    def interactive_session(self):
+        return is_interactive()
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    @validate_type(str)
+    def name(self, new):
+        if self.name is None:
+            self.__name = new
+
+    def build_name_from_caller(self, name= None,**kwargs):
+        return build_name_from_caller(parent=self, **kwargs)
+
+    def get_child_names(self):
+        return [child.logger.name for child in self.children]

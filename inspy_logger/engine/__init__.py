@@ -6,7 +6,7 @@ import sys
 from rich.logging import RichHandler
 
 from inspy_logger.config import DEFAULT_LOG_FILE_PATH
-from inspy_logger.constants import LEVELS, INTERACTIVE_SESSION, INTERNAL
+from inspy_logger.constants import LEVELS, INTERACTIVE_SESSION, INTERNAL, DEFAULT_LOG_FORMAT
 from inspy_logger.engine.handlers import BufferingHandler
 from inspy_logger.common import InspyLogger, DEFAULT_LOGGING_LEVEL
 from inspy_logger.helpers import translate_to_logging_level, CustomFormatter, get_level_name, RestrictedSetter
@@ -27,6 +27,13 @@ class Logger(InspyLogger):
 
     # Set the file path for the log file.
     file_path = RestrictedSetter('file_path', DEFAULT_LOG_FILE_PATH, allowed_types=(str, Path),preferred_type=Path)
+    auto_set_up = RestrictedSetter(
+        name='auto_set_up',
+        initial=True,
+        allowed_types=bool,
+        restrict_setter=True,
+    )
+
 
     def __new__(cls, name, *args, **kwargs):
         """
@@ -48,7 +55,7 @@ class Logger(InspyLogger):
     def __init__(
             self,
             name,
-            auto_set_up=True,
+            auto_set_up=None,
             console_level=DEFAULT_LOGGING_LEVEL,
             file_level=logging.DEBUG,
             file_name="app.log",
@@ -97,12 +104,47 @@ class Logger(InspyLogger):
         self.__no_file_logging = None
         self.__file_path = None
 
+        self.auto_set_up =  auto_set_up or self.auto_set_up
+
+        self.no_file_logging = no_file_logging
+
+        self.parent = parent
 
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(translate_to_logging_level(console_level))
+
+        if self.auto_set_up:
+            self.set_up_logger()
+
+    def set_up_log_file(self, file_path: Union[str, Path], override_no_file_logging=False):
+        """
+        Sets up the log file for the logger.
+
+        Args:
+            file_path (str, Path):
+                The path to the log file.
+        """
+
+        if self.no_file_logging and not override_no_file_logging:
+            return
+            
+        self.set_file_path(file_path)
+        self.ensure_log_file_path()
+
+
+    def set_up_logger(self):
+        """
+        Sets up the logger.
+        """
+        if not getattr(self, 'buffering_handler', None):
+            self.set_up_handlers()
+
+        self.logger.setLevel(self.console_level)
 
         self.logger.propagate = False
         self.logger.start = self.start
+
+        if not self.no_file_logging:
+            self.set_up_log_file(self.file_path)
 
         if 'inSPy-Logger' in self.logger.name:
             self.buffering_handler = BufferingHandler()
@@ -110,12 +152,6 @@ class Logger(InspyLogger):
             self.internal('Initializing logger with buffering handler.')
         else:
             self.internal('Initializing  logger without buffering handler.')
-
-        self.no_file_logging = no_file_logging
-
-        self.set_file_path = Path(file_path).expanduser().absolute().joinpath(file_name)
-
-        self.parent = parent
 
         if not getattr(self, 'buffering_handler', None):
             self.set_up_handlers()
@@ -328,7 +364,6 @@ class Logger(InspyLogger):
 
         return name in self.child_names
 
-
     @validate_type(str, Path, preferred_type=Path)
     def set_file_path(self, file_path):
         """
@@ -338,6 +373,8 @@ class Logger(InspyLogger):
             file_path (str):
                 The path to the log file.
         """
+        old = self.file_path
+
         try:
             old = self.file_path
             self.file_path = file_path
@@ -445,22 +482,24 @@ class Logger(InspyLogger):
         # Get the name of the calling function if no name is provided
         caller_frame = inspect.stack()[1]
 
-        cl_name = self.__build_name_from_caller(caller_frame, name)
-
-        if found_child := self.find_child_by_name(cl_name, exact_match=True):
-            return found_child
-
-        # Determine the console level and file level for the child logger.
-
-        # If the console level is not provided, use the console level of the parent logger
-        console_level = console_level or self.console_level
-
-        # If the file level is not provided, use the file level of the parent logger
-        file_level = file_level or self.file_level
-
-        child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self)
-
-        self.children.append(child_logger)
+        # cl_name = self.__build_name_from_caller(caller_frame, name)
+        #
+        #
+        #
+        # if found_child := self.find_child_by_name(cl_name, exact_match=True):
+        #     return found_child
+        #
+        # # Determine the console level and file level for the child logger.
+        #
+        # # If the console level is not provided, use the console level of the parent logger
+        # console_level = console_level or self.console_level
+        #
+        # # If the file level is not provided, use the file level of the parent logger
+        # file_level = file_level or self.file_level
+        #
+        # child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self)
+        #
+        # self.children.append(child_logger)
 
         return child_logger
 

@@ -16,9 +16,14 @@ Description:
 
 """
 import platform
+import sys
+from pathlib import Path
 
 
 __all__ = [
+    'get_executable_filepath',
+    'get_local_package_path',
+    'get_python_version',
     'get_user_name',
     'SYSTEM_OS',
 ]
@@ -45,3 +50,39 @@ elif SYSTEM_OS == 'linux':
     from inspy_logger.system.linux import *
 elif SYSTEM_OS == 'darwin':
     from inspy_logger.system.mac_os import *
+
+
+def get_executable_filepath() -> str:
+    """
+    Get the path to the executable file.
+
+    Returns:
+        str:
+            The path to the executable file.
+
+    """
+    return sys.executable
+
+
+def get_local_package_path() -> Path:
+    """
+    Get the path to the local package.
+
+    Returns:
+        Path:
+            The path to the local package.
+
+    """
+    return Path(__file__).parent
+
+
+def get_python_version() -> str:
+    """
+    Get the Python version.
+
+    Returns:
+        str:
+            The Python version.
+
+    """
+    return sys.version
