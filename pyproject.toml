@@ -25,7 +25,7 @@ classifiers = [
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Topic :: System :: Logging',
     'Topic :: Utilities',
-    ]
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<4.0"

@@ -124,7 +124,6 @@ class Loggable:
         Raises:
             PermissionError: If the caller of this method is not a member of the same class.
         """
-        print(self.log_device.children)
         log_name = f'{self.log_device.name}.__is_member__'
 
 

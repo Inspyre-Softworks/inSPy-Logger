@@ -599,7 +599,7 @@ class Logger(InspyLogger):
         """
         if 'ipkernel' in sys.modules or 'IPython' in sys.modules:
             # We're running in an interactive environment, return a logger named 'interactive'
-            print(cls.instances)
+
             if cls.instances.get('Interactive-Python'):
                 level = cls.instances.get('inSPy-Logger')
             return cls('Interactive-Python')
