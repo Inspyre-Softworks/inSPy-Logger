@@ -4,7 +4,7 @@ levels, default settings, and the `InspyLogger` class which is a central part of
 
 Constants:
     PROG_NAME (str):
-        The program name, imported from the project's `__about__` module.
+        The program name, imported from the project's :mod:`inspy_logger.__about__` module.
 
     PROG_VERSION (str):
         The program version, imported from the project's `__about__` module.
@@ -29,26 +29,14 @@ Dependencies:
     - logging:
         Used to define the logging levels and to be used in the `InspyLogger` class for actual logging.
 
-    - inspy_logger.__about__:
+    - :mod:`inspy_logger.__about__`:
         Provides metadata like program name and version, which are used in logging for contextual information.
 
     - inspy_logger.common.dirs:
         Provides common directory paths used in the logger, including the default log file path.
 
-Example Usage:
-    # This example shows how to access and use the constants defined in this module
-    >>> from inspy_logger.common.logging_config import DEFAULT_LOGGING_LEVEL, LEVEL_MAP
-    >>> print(DEFAULT_LOGGING_LEVEL)
-    DEBUG
-    >>> print(LEVEL_MAP['error'])
-    40
-
-    # Example of how `InspyLogger` might be used in the future (assuming further implementation)
-    >>> logger = InspyLogger()
-    >>> logger.log(level='error', message='This is an error message')
-
 """
-
+from abc import ABC, abstractmethod
 import logging
 
 from inspy_logger.__about__ import __PROG__ as PROG_NAME, __VERSION__ as PROG_VERSION
@@ -56,23 +44,77 @@ from inspy_logger.config.dirs import DEFAULT_LOG_FILE_PATH
 from inspy_logger.constants import LEVEL_MAP
 
 __all__ = [
-    "PROG_NAME",
-    "PROG_VERSION",
-    "LEVEL_MAP",
-    "LEVELS",
-    "DEFAULT_LOGGING_LEVEL",
-    "DEFAULT_LOG_FILE_PATH",
-    "InspyLogger"
-]
+        "PROG_NAME",
+        "PROG_VERSION",
+        "LEVEL_MAP",
+        "LEVEL_NAMES",
+        "LEVELS",
+        "DEFAULT_LOGGING_LEVEL",
+        "DEFAULT_LOG_FILE_PATH",
+        "InspyLogger"
+    ]
 
 
 LEVELS = list(LEVEL_MAP.values())
 """The list of level names."""
+
+LEVEL_NAMES = [level.upper() for level in LEVEL_MAP.keys()]
+"""The list of level names in uppercase."""
 
 
 DEFAULT_LOGGING_LEVEL = logging.INFO
 """The default logging level."""
 
 
-class InspyLogger:
-    pass
+class InspyLogger(ABC):
+
+    @property
+    @abstractmethod
+    def children(self):
+        pass
+
+    @property
+    @abstractmethod
+    def console_level(self):
+        pass
+
+    @property
+    @abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abstractmethod
+    def file_level(self):
+        pass
+
+    @property
+    @abstractmethod
+    def file_path(self):
+        pass
+
+    @property
+    @abstractmethod
+    def time_started(self):
+        pass
+
+    @property
+    @abstractmethod
+    def to_dict(self):
+        pass
+
+    @abstractmethod
+    def debug(self, message):
+        pass
+
+    @abstractmethod
+    def info(self, message):
+        pass
+
+    @abstractmethod
+    def warning(self, message):
+        pass
+
+    @abstractmethod
+    def error(self, message):
+        pass

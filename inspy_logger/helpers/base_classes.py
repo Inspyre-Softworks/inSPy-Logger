@@ -94,7 +94,7 @@ class Loggable:
 
         self.__log_device = new
 
-    def create_child_logger(self, name=None, override=False):
+    def create_child_logger(self, name=None, override=False, **kwargs):
         """
         Creates and returns a child logger of this object's logger.
 
@@ -107,15 +107,21 @@ class Loggable:
             Logger: An instance of the Logger class that represents the child logger.
         """
         if name is None:
-            name = inspect.stack()[1][
-                3
-            ]
-        if self.log_device.has_child(name):
-            return self.log_device.find_child_by_name(name)
+            name = inspect.stack()[1][3]
+
+        full_name = f'{self.class_logger.name}:{name}'
+
+        if self.class_logger.has_child(full_name):
+            return self.class_logger.find_child_by_name(full_name, exact_match=True)
         if not override:
             self.__is_member__()
 
-        return self.log_device.get_child(name)
+        return self.class_logger.get_child(name, **kwargs)
+
+    def create_logger(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs['name'] = inspect.stack()[1][3]
+        return self.create_child_logger(**kwargs)
 
     def __is_member__(self):
         """

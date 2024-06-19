@@ -120,6 +120,7 @@ class VersionParser:
 
         release = 'final'
         release_num = 0
+        release_type = 'final'  # Default release type
 
         if len(parts) > 1:
             release_info = parts[1]

@@ -1,25 +1,31 @@
 """
 
 
-Author: 
+Author:
     Inspyre Softworks
 
 Project:
     inSPy-Logger
 
-File: 
+File:
     inspy_logger/constants.py
- 
+
 
 Description:
-    
+
 
 """
 
 
 import logging
+from rich.logging import RichHandler
 
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
+
+HANDLER_TYPES = {
+        'console': RichHandler,
+        'file': logging.FileHandler
+        }
 
 LEVEL_MAP = {
     'internal': 5,

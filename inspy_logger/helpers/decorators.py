@@ -1,21 +1,22 @@
 """
 
 
-Author: 
+Author:
     Inspyre Softworks
 
 Project:
     inSPy-Logger
 
-File: 
+File:
     inspy_logger/helpers/decorators.py
- 
+
 
 Description:
     Contains decorators used by the inSPy-Logger package.
 
 """
 from functools import wraps
+from typing import Callable, Optional
 
 
 __all__ = [
@@ -140,28 +141,45 @@ def count_invocations(method):
     return wrapper
 
 
-def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case_sensitive=True):
+def validate_type(
+        *allowed_types,
+        preferred_type=None,
+        allowed_values=None,
+        case_sensitive=True,
+        conversion_funcs: Optional[dict] = None):
     """
     A decorator for validating the type and optionally the value of a value passed to a class
     property setter, with an option to convert to a preferred type if specified and to enforce
     value restrictions.
 
     Parameters:
-        preferred_type (type, optional): The preferred type to which values should be converted
-                                          if possible. If None, no conversion is attempted.
-        *allowed_types: Variable length list of allowed types for the property value.
-        allowed_values (iterable, optional): An iterable of values that are allowed. If None,
-                                             all values of the correct type are allowed.
-        case_sensitive (bool, optional): Specifies whether string comparisons should be case
-                                         sensitive. Defaults to True. Ignored for non-string types.
+        preferred_type (type, optional):
+            The preferred type to which values should be converted if possible. If None, no
+            conversion is attempted.
+
+        *allowed_types:
+            Variable length list of allowed types for the property value.
+
+        allowed_values (iterable, optional):
+            An iterable of values that are allowed. If None, all values of the correct type are allowed.
+
+        case_sensitive (bool, optional):
+            Specifies whether string comparisons should be case-sensitive. Defaults to True. Ignored for non-string
+            types.
+
+        conversion_funcs (dict, optional):
+            A dictionary of conversion functions to use for converting
 
     Returns:
         A decorator function for the property setter.
 
     Raises:
-        TypeError: If the incoming value does not match one of the allowed types, cannot be
-                   converted to the preferred type, or is not in the list of allowed values.
-        ValueError: If the value is of the correct type but not in the allowed values list.
+        TypeError:
+            If the incoming value does not match one of the allowed types, cannot be onverted to the preferred type,
+            or is not in the list of allowed values.
+
+        ValueError:
+            If the value is of the correct type but not in the allowed values list.
 
     Example:
         >>> class MyClass:
@@ -189,7 +207,10 @@ def validate_type(*allowed_types, preferred_type=None, allowed_values=None, case
 
             if preferred_type and not isinstance(value, preferred_type):
                 try:
-                    value = preferred_type(value)
+                    if conversion_funcs and type(value) in conversion_funcs:
+                        value = conversion_funcs[type(value)](value)
+                    else:
+                        value = preferred_type(value)
                 except Exception as e:
                     raise TypeError(f"Could not convert value to preferred type {preferred_type.__name__}: {e}")
 
