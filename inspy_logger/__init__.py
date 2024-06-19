@@ -31,6 +31,7 @@ logging.setLogRecordFactory(record_factory)
 
 
 from inspy_logger.engine import Logger
+from inspy_logger.helpers import get_existing_logger
 
 __all__ = [
     "clean_module_name",
@@ -104,7 +105,7 @@ def start_logger(override_block=True):
         if isinstance(PROG_LOGGER, Null):
             from rich import print
             print("The logger has been blocked from starting. To start the logger, run `start_logger()`.")
-        
+
 
 InspyLogger = Logger
 

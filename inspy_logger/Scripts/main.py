@@ -1,11 +1,11 @@
 """
 
-File: 
+File:
     inspy_logger/Scripts/main.py
 
-Author: 
+Author:
     Inspyre Softworks
-    
+
 """
 INSPY_LOG_LEVEL = 'info'
 
@@ -60,6 +60,10 @@ if parsed_args.subcommand == 'update':
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = parsed_args.pre_release
 else:
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
+
+
+def get_parser():
+    return parser
 
 
 def debug(args = parsed_args):
