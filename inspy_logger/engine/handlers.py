@@ -17,7 +17,7 @@ class BufferingHandler(Handler):
         """
         Replays the buffered logs and restores the original logging level of the logger.
 
-        Args:
+        Parameters:
             logger:
                 The logger instance to replay the logs to.
 

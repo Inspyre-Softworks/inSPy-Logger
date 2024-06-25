@@ -1,11 +1,11 @@
 """
 
-File: 
+File:
     inspy_logger/Scripts/main.py
 
-Author: 
+Author:
     Inspyre Softworks
-    
+
 """
 INSPY_LOG_LEVEL = 'info'
 
@@ -19,12 +19,10 @@ from inspy_logger.version import parse_version, PyPiVersionInfo
 
 
 # ---- SET UP PARSER --------------------------------
-=======
-from inspy_logger.version import parse_version, get_full_version_name, PyPiVersionInfo
-import sys
-from rich import print
-from rich.table import Table
-from argparse import ArgumentParser
+
+parser = ArgumentParser('inspy-logger-version', description='Displays version information for inspy-logger.')
+
+parser.add_argument('-v', '--version', action='version', version=parse_version())
 
 # ---- SET UP SUBPARSERS --------------------------------
 
@@ -62,6 +60,10 @@ if parsed_args.subcommand == 'update':
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = parsed_args.pre_release
 else:
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
+
+
+def get_parser():
+    return parser
 
 
 def debug(args = parsed_args):

@@ -18,14 +18,12 @@ class LoggableDescriptor:
         for frame_record in stack[1:]:
             if 'self' in frame_record.frame.f_locals and frame_record.frame.f_locals['self'] is instance:
                 method_name = frame_record.function
-                print(method_name)
-                break
 
+                break
         else:
             raise Exception("Could not determine the calling method's name.")
 
         # Get a child logger named after the class and method
-
         return instance.log_device.get_child(method_name)
 
 
@@ -36,9 +34,7 @@ def _get_parent_logging_device():
     Returns:
         Logger: The parent logging device.
     """
-    
     LOG_DEVICE.debug("Determining parent logging device")
-
     caller_frame = inspect.currentframe().f_back
     caller_locals = caller_frame.f_locals
 
@@ -63,20 +59,19 @@ class Loggable:
     class_logger = None
 
     def __init__(self, parent_log_device=None, **kwargs):
-
         """
         Initializes an instance of the class.
 
-        Args:
+        Parameters:
             parent_log_device (optional): The parent log device. Defaults to None.
             **kwargs: Additional keyword arguments.
 
         Returns:
             None
         """
-
         self.parent_log_device = parent_log_device
         self.__log_name = self.__class__.__name__
+
         if self.parent_log_device is not None:
             self.__log_device = self.parent_log_device.get_child(self.__log_name)
         else:
@@ -99,7 +94,7 @@ class Loggable:
 
         self.__log_device = new
 
-    def create_child_logger(self, name=None, override=False):
+    def create_child_logger(self, name=None, override=False, **kwargs):
         """
         Creates and returns a child logger of this object's logger.
 
@@ -111,15 +106,22 @@ class Loggable:
         Returns:
             Logger: An instance of the Logger class that represents the child logger.
         """
+        if name is None:
+            name = inspect.stack()[1][3]
+
+        full_name = f'{self.class_logger.name}:{name}'
+
+        if self.class_logger.has_child(full_name):
+            return self.class_logger.find_child_by_name(full_name, exact_match=True)
         if not override:
             self.__is_member__()
 
-        if name is None:
-            name = inspect.stack()[1][
-                3
-            ]  # Get the name of the calling function if no name is provided
-        #print(inspect.stack()[1])
-        return self.log_device.get_child(name)
+        return self.class_logger.get_child(name, **kwargs)
+
+    def create_logger(self, **kwargs):
+        if 'name' not in kwargs:
+            kwargs['name'] = inspect.stack()[1][3]
+        return self.create_child_logger(**kwargs)
 
     def __is_member__(self):
         """
@@ -128,8 +130,11 @@ class Loggable:
         Raises:
             PermissionError: If the caller of this method is not a member of the same class.
         """
+        log_name = f'{self.log_device.name}.__is_member__'
+
+
         log_device = self.log_device.get_child("__is_member__")
-        log = log_device.logger
+        log = log_device
 
         current_frame = inspect.currentframe()
         log.debug(f"Current frame: {current_frame}")

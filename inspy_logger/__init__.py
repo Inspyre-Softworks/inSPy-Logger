@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-
 import contextlib
-import sy
+import sys
 import inspect
 import os
 import logging
@@ -33,6 +32,7 @@ logging.setLogRecordFactory(record_factory)
 
 
 from inspy_logger.engine import Logger
+from inspy_logger.helpers import get_existing_logger
 
 __all__ = [
     "clean_module_name",
@@ -57,6 +57,8 @@ MODULE_OBJ = sys.modules[__name__]
 CLIENT_PROG_NAME = determine_client_prog_name()
 
 INIT_LOG_LEVEL = determine_level(CLIENT_PROG_NAME)
+
+INTERACTIVE_SESSION = find_variable_in_call_stack('INSPY_INTERACTIVE_SESSION', default=False)
 
 
 def start_logger(override_block=True):
@@ -104,7 +106,7 @@ def start_logger(override_block=True):
         if isinstance(PROG_LOGGER, Null):
             from rich import print
             print("The logger has been blocked from starting. To start the logger, run `start_logger()`.")
-        
+
 
 InspyLogger = Logger
 

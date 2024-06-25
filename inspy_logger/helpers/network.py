@@ -73,7 +73,7 @@ class Host():
 
 
 
-            Args:
+            Parameters:
                 url_parts (:class:`list[:obj:``str``]`):
                     Pass in a list of url parts that will be unpacked into the class properties
 
@@ -214,7 +214,7 @@ class Host():
                         - TLD:
                             The top-level domain for this host (e.g., com)
 
-            Args:
+            Parameters:
                 self: Refer to the object itself
 
             Returns:

@@ -64,7 +64,6 @@ def start_root_logger():
     _log = root_logger
     _log.error(f'{prefix}error')
     _log.exception(f'{prefix}exception')
-
     _log.critical(prefix + 'critical')
     _log.fatal(prefix + 'fatal')
     

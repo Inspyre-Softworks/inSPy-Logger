@@ -3,12 +3,19 @@ import os
 import logging
 import sys
 
+from time import time
+
 from rich.logging import RichHandler
 
 from inspy_logger.config import DEFAULT_LOG_FILE_PATH
+from inspy_logger.constants import LEVELS, INTERACTIVE_SESSION, INTERNAL, HANDLER_TYPES
 from inspy_logger.engine.handlers import BufferingHandler
+from inspy_logger.models.announcement import Announcement
 from inspy_logger.common import InspyLogger, DEFAULT_LOGGING_LEVEL
-from inspy_logger.helpers import translate_to_logging_level, CustomFormatter, get_level_name, RestrictedSetter
+from inspy_logger.helpers import (
+        translate_to_logging_level, CustomFormatter, get_level_name,
+        translate_to_logging_level_str
+    )
 from inspy_logger.helpers.decorators import add_aliases, method_alias, count_invocations, validate_type
 from typing import List, Union, Optional
 from pathlib import Path
@@ -20,20 +27,22 @@ class Logger(InspyLogger):
     A Singleton class responsible for managing the logging mechanisms of the application.
     """
 
-    instances = {}  # A dictionary to hold instances of the Logger class.
+    LEVELS = LEVELS
+    INTERACTIVE_SESSION = INTERACTIVE_SESSION
 
-    # Set the file path for the log file.
-    file_path = RestrictedSetter('file_path', DEFAULT_LOG_FILE_PATH, allowed_types=(str, Path),preferred_type=Path)
+    instances = {}  # A dictionary to hold instances of the Logger class.
 
     def __new__(cls, name, *args, **kwargs):
         """
         Creates or returns an existing instance of the Logger class for the provided name.
 
-        Args:
-            name (str): The name of the logger instance.
+        Parameters:
+            name (str):
+                The name of the logger instance.
 
         Returns:
-            Logger: An instance of the Logger class.
+            Logger:
+                An instance of the Logger class.
         """
 
         if name not in cls.instances:
@@ -52,7 +61,11 @@ class Logger(InspyLogger):
             file_path=DEFAULT_LOG_FILE_PATH.parent,
             no_file_logging=False,
             parent=None,
-    ):
+            init_announcement: Optional[Announcement] = None,
+            init_announcement_template: str = None,
+            announce_on_init: bool = True,
+            announcement_level: Union[int, str] = 'debug'
+        ):
         """
         Initializes a logger instance.
 
@@ -77,15 +90,43 @@ class Logger(InspyLogger):
 
             parent (Logger, optional):
                 The parent logger instance. Defaults to None.
+
+            init_announcement (Announcement, optional):
+                An announcement object to use for initialization. Defaults to None.
+
+            init_announcement_template (str, optional):
+                A template to use for the initialization announcement. Defaults to None.
+
+                Note:
+                    If both `init_announcement` and `init_announcement_template` are provided, `init_announcement` will
+                    take precedence.
+
+                    Built-In Placeholders:
+                        - {name}: The name of the logger.
+                        - {time_started}: The time the logger was started.
+                        - {parent}: The name of the parent logger.
+
+
         """
         # Check if the logger has already been initialized.
         if hasattr(self, 'logger'):
             return
 
+        self.__time_started = time()
+
+        #print(f'Initializing logger: {name}')
+
+        self.__announcement_made = False
+
         self.__call_counts = {}
 
+        #print(f'Console Level: {console_level}')
         self.__console_level = translate_to_logging_level(console_level)
+        #print(f'Console Level: {self.__console_level}')
+
+        #print(f'File Level: {file_level}')
         self.__file_level = translate_to_logging_level(file_level)
+        #print(f'File Level: {self.__file_level}')
 
         self.__children = []
 
@@ -94,30 +135,86 @@ class Logger(InspyLogger):
         self.__file_path = None
 
         self.logger = logging.getLogger(name)
-        self.logger.debug('Debug message from logger')
+        #print(f'Logger Name: {self.logger.name}')
+
         self.logger.setLevel(translate_to_logging_level(console_level))
+        #print(f'Logger Level: {self.logger.level}')
 
         self.logger.propagate = False
-        self.logger.start = self.start
-
-        if 'inSPy-Logger' in self.logger.name:
-            self.buffering_handler = BufferingHandler()
-            self.logger.addHandler(self.buffering_handler)
-            self.logger.debug('Initializing logger with buffering handler.')
-        else:
-            self.logger.debug('Initializing  logger without buffering handler.')
-
-        self.no_file_logging = no_file_logging
-
-        self.set_file_path = Path(file_path).expanduser().absolute().joinpath(file_name)
+        #print(f'Logger Propagate: {self.logger.propagate}')
 
         self.parent = parent
 
+        self.logger.start = self.start
+        #print(f'Logger Start: {self.logger.start}')
+
+
+        if 'inSPy-Logger' in self.logger.name:
+            #print('Setting up handlers')
+            self.buffering_handler = BufferingHandler()
+            #print('Buffering Handler: ', self.buffering_handler)
+            self.logger.addHandler(self.buffering_handler)
+            #print('Buffering Handler added to logger')
+            self.internal('Initializing logger with buffering handler.')
+            #print('Internal message sent')
+        else:
+            self.internal('Initializing  logger without buffering handler.')
+
+        self.no_file_logging = no_file_logging
+        #print(f'No File Logging: {self.no_file_logging}')
+
+        self._file_path = Path(file_path).expanduser().absolute().joinpath(file_name)
+
         if not getattr(self, 'buffering_handler', None):
+            #print('Replaying and setting up handlers')
             self.set_up_handlers()
 
+        self.__announcement = None
+
+        if announce_on_init:
+
+            if init_announcement and isinstance(init_announcement, Announcement):
+                self.__announcement = init_announcement
+            elif init_announcement_template:
+                self.__announcement = Announcement(
+                        self,
+                        init_announcement_template,
+                        announcement_level
+                        )
+
+            if self.__announcement is None:
+                self.__announcement = Announcement(
+                        self,
+                        Announcement.DEFAULT_INITIALIZATION_ANNOUNCEMENT,
+                        announcement_level
+                        )
+
+            if auto_set_up:
+                #print(f'Announcing initialization: {self.__announcement.announcement_text}')
+                self.announce_initialization()
+
     @property
-    def call_counts(self):
+    def announcement(self) -> Announcement:
+        return self.__announcement
+
+    @announcement.setter
+    @validate_type(Announcement, str, preferred_type=Announcement)
+    def announcement(self, new: Union[Announcement, str]) -> None:
+        if not self.announcement_made and isinstance(new, Announcement):
+            self.__announcement = new
+
+    @property
+    def announcement_level(self) -> int:
+        if not self.announcement:
+            return self.console_level
+        return self.announcement.announcement_level
+
+    @property
+    def announcement_made(self) -> bool:
+        return self.announcement.announced
+
+    @property
+    def call_counts(self) -> dict:
         """
         Property to get the call counts of decorated methods.
 
@@ -133,7 +230,7 @@ class Logger(InspyLogger):
         return self.get_child_names()
 
     @property
-    def children(self):
+    def children(self) -> List[InspyLogger]:
         return self.__children
 
     @children.deleter
@@ -141,7 +238,7 @@ class Logger(InspyLogger):
         self.__children = []
 
     @property
-    def console_level(self):
+    def console_level(self) -> int:
         """
         Returns the logging level for the console.
 
@@ -152,21 +249,32 @@ class Logger(InspyLogger):
         return self.__console_level
 
     @console_level.setter
+    @validate_type(
+            str, int,
+            preferred_type=str,
+            conversion_funcs={int: translate_to_logging_level_str}
+        )
     def console_level(self, level):
         """
         Sets the logging level for the console.
 
-        Args:
+        Parameters:
             level:
                 The logging level for the console.
 
         Returns:
 
         """
-        self.set_level(console_level=translate_to_logging_level(level))
+        if level.upper() not in LEVELS:
+            raise ValueError(f'Invalid logging level: {level}. Please provide a valid logging level; one of {LEVELS}')
+
+        self.__console_level = translate_to_logging_level(level)
+
+        self.__apply_level_change('console')
 
     @property
     def console_level_name(self):
+        self.internal('Test message')
         return get_level_name(self.console_level)
 
     @property
@@ -183,7 +291,7 @@ class Logger(InspyLogger):
         return logger
 
     @property
-    def file_level(self):
+    def file_level(self) -> int:
         """
         Returns the logging level for the file.
 
@@ -194,56 +302,54 @@ class Logger(InspyLogger):
         return self.__file_level
 
     @file_level.setter
+    @validate_type(
+            str, int,
+            preferred_type=str,
+            conversion_funcs={int: translate_to_logging_level_str}
+        )
     def file_level(self, level):
         """
         Sets the logging level for the file.
 
-        Args:
+        Parameters:
             level: The logging level for the file.
 
         Returns:
             None
         """
-        self.set_level(file_level=translate_to_logging_level(level))
+        if level.upper() not in LEVELS:
+            raise ValueError(f'Invalid logging level: {level}. Please provide a valid logging level; one of {LEVELS}')
+
+        self.__file_level = translate_to_logging_level(level)
+
+        self.__apply_level_change('file')
 
     @property
-    def file_level_name(self):
+    def file_level_name(self) -> str:
         return get_level_name(self.file_level)
 
-    #@property
-    #def file_path(self):
-    #    return self.__file_path
+    @property
+    def file_path(self) -> Path:
+        """
+        Returns the path to the log file.
 
-    # @file_path.setter
-    # @validate_type(str, Path, preferred_type=Path)
-    # def file_path(self, new: Union[str, Path]) -> None:
-    #     """
-    #     Sets file-path for the log-file.
-    #
-    #     Args:
-    #         new (str, Path):
-    #             The new file-path for the log-file.
-    #
-    #     Returns:
-    #
-    #     """
-    #     print('I was called')
-    #
-    #     if not self.no_file_logging:
-    #         old = self.__file_path
-    #
-    #         self.__file_path = Path(new)
-    #
-    #         # We need to ensure that the
-    #         try:
-    #             new_path = Path(new)
-    #             self.ensure_log_file_path()
-    #         except Exception as e:
-    #             self.__file_path = old
-    #             raise e
+        Returns:
+            Path:
+                The path to the log file.
+
+        """
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, new):
+        self._file_path = new
 
     @property
-    def name(self):
+    def interactive_session(self) -> bool:
+        return hasattr(sys, 'ps1') and sys.ps1
+
+    @property
+    def name(self) -> str:
         """
         Returns the name of the logger instance.
 
@@ -254,13 +360,51 @@ class Logger(InspyLogger):
         return self.logger.name
 
     @property
-    def no_file_logging(self):
+    def no_file_logging(self) -> bool:
         return self.__no_file_logging
 
     @no_file_logging.setter
     @validate_type(bool)
     def no_file_logging(self, new):
         self.__no_file_logging = new
+
+    @property
+    def time_started(self) -> float:
+        """
+        Returns the time the logger was started.
+        """
+        return self.__time_started
+
+    def __apply_level_change(self, handler_type):
+        """
+        Applies the level change to the specified handler type and the logger's children.
+
+        Parameters:
+            handler_type (str):
+                The type of handler to apply the level change to.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError:
+                If the handler type is invalid.
+        """
+        handler_type = handler_type.lower()
+        if handler_type not in HANDLER_TYPES:
+            raise ValueError(
+                        f'Invalid handler type: {handler_type}. '
+                        f'Please provide a valid handler type; one of {HANDLER_TYPES}'
+                    )
+
+        level = getattr(self, f'{handler_type}_level')
+
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                handler.setLevel(level)
+
+        for child in self.children:
+            setattr(child, f'{handler_type}_level', level)
 
     def __build_name_from_caller(self, caller: inspect.FrameInfo, name: str = None):
         """
@@ -304,37 +448,54 @@ class Logger(InspyLogger):
 
                 return handler
 
+    def has_child(self, name):
+        """
+        Checks if the logger has a child with the specified name.
+
+        Parameters:
+            name (str):
+                The name of the child logger.
+
+        Returns:
+            bool:
+                True if the logger has a child with the specified name, else False.
+        """
+
+        return name in self.child_names
+
     @validate_type(str, Path, preferred_type=Path)
     def set_file_path(self, file_path):
         """
         Sets the file path for the logger.
 
-        Args:
+        Parameters:
             file_path (str):
                 The path to the log file.
         """
+        #print('Getting old filepath')
+        old = self.file_path
+        #print(f'Old File Path: {old}')
         try:
-            old = self.file_path
+
             self.file_path = file_path
             self.ensure_log_file_path()
         except Exception as e:
             self.file_path = old
             raise
 
-
-
     def set_up_console(self):
         """
         Configures and attaches a console handler to the logger.
         """
 
-        self.logger.debug("Setting up console handler")
+        self.internal("Setting up console handler")
         console_handler = RichHandler(
-            show_level=True, markup=True, rich_tracebacks=True, tracebacks_show_locals=True
-        )
+                show_level=True, markup=True, rich_tracebacks=True,
+                tracebacks_show_locals=True
+            )
         formatter = CustomFormatter(
-            f"[{self.logger.name}] %(message)s"
-        )
+                f"[{self.logger.name}] %(message)s"
+            )
         console_handler.setFormatter(formatter)
         console_handler.setLevel(self.__console_level)
         self.logger.addHandler(console_handler)
@@ -343,69 +504,53 @@ class Logger(InspyLogger):
         """
         Configures and attaches a file handler to the logger.
         """
+
         self.ensure_log_file_path()
         file_handler = logging.FileHandler(self.file_path)
         file_handler.setLevel(self.__file_level)
         formatter = CustomFormatter(
-            "%(asctime)s - [%(name)s] - %(levelname)s - %(message)s |-| %(file_name)s:%(lineno)d"
-        )
+                "%(asctime)s - [%(name)s] - %(levelname)s - %(message)s |-| %(file_name)s:%(lineno)d"
+            )
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-    def set_level(self, console_level=None, file_level=None) -> None:
+    def set_level(self, console_level=None, file_level=None, override=False) -> None:
         """
         Updates the logging levels for both console and file handlers.
 
-        Args:
+        Parameters:
             console_level:
                 The logging level for the console.
 
             file_level:
                 The logging level for the file.
 
+            override (bool):
+                Whether to override the `no_file_logging` option. Defaults to `False`.
+
         Returns:
             None
         """
 
-        self.logger.debug("Setting log levels")
+        self.internal("Setting log levels")
 
         # If we received a console level, update the console level.
         if console_level is not None:
-            console_level = translate_to_logging_level(console_level)
-
-            # Set the `console_level` property to the new value.
-            self.__console_level = console_level
-
-            # Iterate through the handlers to get the right one.
-            for handler in self.logger.handlers:
-                if isinstance(handler, RichHandler):
-                    handler.setLevel(console_level)
+            self.console_level = console_level
 
         # If we received a file level, update the file level.
         if file_level is not None:
-            file_level = translate_to_logging_level(file_level)
-
-            # Set the `file_level` property to the new value.
-            self.__file_level = file_level
-
-            # Iterate through the handlers to get the right one.
-            for handler in self.logger.handlers:
-                if isinstance(handler, logging.FileHandler):
-                    handler.setLevel(file_level)
+            self.file_level = file_level
 
         # Set the logger level to the minimum of the console and file levels
         self.logger.setLevel(min(self.__console_level, self.__file_level))
 
-        # Recursively update the levels of all child loggers.
-        for child in self.children:
-            child.set_level(console_level=console_level, file_level=file_level)
-
     @method_alias('add_child', 'add_child_logger', 'get_child_logger')
-    def get_child(self, name=None, console_level=None, file_level=None) -> InspyLogger:
+    def get_child(self, name=None, console_level=None, file_level=None, **kwargs) -> InspyLogger:
         """
         Retrieves a child logger with the specified name, console level, and file level.
 
-        Args:
+        Parameters:
             name (str, optional):
                 The name of the child logger. Defaults to None.
 
@@ -419,6 +564,14 @@ class Logger(InspyLogger):
             InspyLogger:
                 The child logger with the specified name, console level, and file level.
         """
+        # Get the name of the calling function if no name is provided
+        caller_frame = inspect.stack()[1]
+
+        cl_name = self.__build_name_from_caller(caller_frame, name)
+
+        if found_child := self.find_child_by_name(cl_name, exact_match=True):
+            return found_child
+
         # Determine the console level and file level for the child logger.
 
         # If the console level is not provided, use the console level of the parent logger
@@ -427,19 +580,7 @@ class Logger(InspyLogger):
         # If the file level is not provided, use the file level of the parent logger
         file_level = file_level or self.file_level
 
-        # Get the name of the calling function if no name is provided
-        caller_frame = inspect.stack()[1]
-
-        cl_name = self.__build_name_from_caller(caller_frame, name)
-
-        cl_name
-
-        found_child = self.find_child_by_name(cl_name, exact_match=True)
-
-        if found_child:
-            return found_child
-
-        child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self)
+        child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self, **kwargs)
 
         self.children.append(child_logger)
 
@@ -451,7 +592,7 @@ class Logger(InspyLogger):
         Fetches the names of all child loggers associated with this logger instance.
         """
 
-        self.logger.debug("Getting child logger names")
+        self.internal("Getting child logger names")
         return [child.logger.name for child in self.children]
 
     def get_parent(self) -> InspyLogger:
@@ -459,14 +600,14 @@ class Logger(InspyLogger):
         Fetches the parent logger associated with this logger instance.
         """
 
-        self.logger.debug("Getting parent logger")
+        self.internal("Getting parent logger")
         return self.parent
 
     def find_child_by_name(self, name: str, case_sensitive=True, exact_match=False) -> (List, InspyLogger):
         """
         Searches for a child logger by its name.
 
-        Args:
+        Parameters:
             name (str):
                 The name of the child logger to search for.
 
@@ -481,7 +622,7 @@ class Logger(InspyLogger):
                             If exact_match is False, returns a list of Logger instances whose names contain the
                             search term.
         """
-        self.logger.debug(f'Searching for child with name: {name}')
+        self.internal(f'Searching for child with name: {name}')
         results = []
 
         if not case_sensitive:
@@ -497,24 +638,37 @@ class Logger(InspyLogger):
         return results
 
     @count_invocations
-    def debug(self, message):
+    def debug(self, message, stack_level=4):
         """
         Logs a debug message.
 
-        Args:
-          message (str): The message to log.
+        Parameters:
+            message (str): The message to log.
+
+            stack_level (int, optional):
+                The stacklevel to use when logging. Defaults to 3.
         """
-        self._log(logging.DEBUG, message, args=(), stacklevel=2)
+        self._log(logging.DEBUG, message, args=(), stacklevel=stack_level)
 
     @count_invocations
     def info(self, message):
         """
         Logs an info message.
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.INFO, message, args=(), stacklevel=2)
+
+    def internal(self, message, *args, **kwargs):
+        """
+        Logs an internal message.
+
+        Parameters:
+            message (str): The message to log.
+        """
+        if self.logger.isEnabledFor(INTERNAL):
+            self._log(INTERNAL, message, args=args, stacklevel=2)
 
     @count_invocations
     def warning(self, message):
@@ -522,7 +676,7 @@ class Logger(InspyLogger):
         Logs a warning message.
 
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.WARNING, message, args=(), stacklevel=2)
@@ -533,7 +687,7 @@ class Logger(InspyLogger):
         Logs an error message.
 
 
-        Args:
+        Parameters:
             message (str): The message to log.
         """
         self._log(logging.ERROR, message, args=(), stacklevel=2)
@@ -553,6 +707,43 @@ class Logger(InspyLogger):
 
         return f'<Logger: {name} w/ levels {self.console_level_name}, {self.file_level_name} at {hex_id}{parent_part}>'
 
+    def announce_initialization(
+            self,
+            announcement: str = Announcement.DEFAULT_INITIALIZATION_ANNOUNCEMENT,
+            message_level: str = None,
+            do_replace_placeholders=True,
+            **kwargs
+        ):
+        """
+        Announces the initialization of the logger.
+
+        Parameters:
+
+            announcement (str, optional):
+                The announcement to make. Defaults to `DEFAULT_INITIALIZATION_ANNOUNCEMENT`.
+
+            message_level (str, optional):
+                The logging level to use for the announcement. Defaults to 'debug'.
+
+            do_replace_placeholders (bool, optional):
+                Whether to replace placeholders in the announcement. Defaults to True.
+
+        Returns:
+            None
+        """
+        if self.announcement_made:
+            return
+
+        if do_replace_placeholders:
+            self.announcement.replace_placeholders()
+
+        if message_level is None:
+            message_level = self.announcement_level
+
+        self.announcement.announcement_level = message_level
+
+        self.announcement.announce()
+
     @classmethod
     def create_logger_for_caller(cls):
         """
@@ -563,7 +754,7 @@ class Logger(InspyLogger):
         """
         if 'ipkernel' in sys.modules or 'IPython' in sys.modules:
             # We're running in an interactive environment, return a logger named 'interactive'
-            print(cls.instances)
+
             if cls.instances.get('Interactive-Python'):
                 level = cls.instances.get('inSPy-Logger')
             return cls('Interactive-Python')
@@ -624,7 +815,7 @@ class Logger(InspyLogger):
         """
         Starts the logger.
         """
-        self.logger.warning('InspyLogger.start() is deprecated.')
+        self.warning('InspyLogger.start() is deprecated.')
         if not self.logger.handlers:
             self.set_up_handlers()
 
@@ -638,7 +829,7 @@ class Logger(InspyLogger):
         """
         Determines the in-project path of the module from the call frame.
 
-        Args:
+        Parameters:
             frame:
                 The frame from which to determine the module path.
 
@@ -656,6 +847,11 @@ class Logger(InspyLogger):
         """
         Low-level logging implementation, passing stacklevel to findCaller.
         """
+        #caller_frame = inspect.currentframe().f_back
+        ##print(caller_frame.f_code.co_name)
+        if INTERACTIVE_SESSION:
+            stacklevel -= 1
+
         if self.logger.isEnabledFor(level):
             self.logger._log(level, msg, args, exc_info, extra, stack_info, stacklevel + 1)
 
@@ -675,9 +871,9 @@ class Logger(InspyLogger):
         table.add_row('Children', str(len(self.children)))
         table.add_row('Handlers', str(len(self.logger.handlers)))
 
-        call_counts_str = ', '.join(f'{method}: {count}' for method, count in self.call_counts.items())
-
-        if call_counts_str:
+        if call_counts_str := ', '.join(
+            f'{method}: {count}' for method, count in self.call_counts.items()
+        ):
             table.add_row('Call Counts', call_counts_str)
         else:
             table.add_row('Call Counts', 'No method calls recorded')
@@ -686,3 +882,13 @@ class Logger(InspyLogger):
             table.add_row('Buffering Handler', 'Yes' if self.buffering_handler else 'No')
 
         return table
+
+
+def get_loggers():
+
+    import gc
+
+    gc.collect()
+    loggers = [obj for obj in gc.get_objects() if isinstance(obj, InspyLogger)]
+
+    return {str(logger).split(": ")[1].split(" w/")[0]: logger for logger in loggers}

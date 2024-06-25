@@ -15,8 +15,7 @@ from typing import Optional, Union
 
 INSPY_LOGGER_LOG_DIR_PATH = user_log_path(
     appname=PROG_NAME or find_valid_vars_in_call_stack(VALID_PROG_NAME_VARS),
-    appauthor=SOFTWARE_ORG,
-    ensure_exists=True
+    appauthor=SOFTWARE_ORG
 )
 
 INSPY_LOGGER_LOG_FILE_NAME = 'app.log'
@@ -124,7 +123,7 @@ def get_log_file_path(
     if prog_name:
         file_name = f"{prog_name}.log"
         if dev_name:
-            log_file_path = Path(user_log_path(appname=prog_name, appauthor=dev_name, ensure_exists=True)).joinpath(file_name)
+            log_file_path = Path(user_log_path(appname=prog_name, appauthor=dev_name).joinpath(file_name))
         else:
             log_file_path = INSPY_LOGGER_LOG_DIR_PATH.joinpath(file_name)
 
