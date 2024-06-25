@@ -190,7 +190,7 @@ class Logger(InspyLogger):
                         )
 
             if auto_set_up:
-                #print(f'Announcing initialization: {self.__announcement.announcement_text}')
+                # # print(f'Announcing initialization: {self.__announcement.announcement_text}')
                 self.announce_initialization()
 
     @property
@@ -265,6 +265,7 @@ class Logger(InspyLogger):
         Returns:
 
         """
+        # print(level)
         if level.upper() not in LEVELS:
             raise ValueError(f'Invalid logging level: {level}. Please provide a valid logging level; one of {LEVELS}')
 
@@ -391,6 +392,7 @@ class Logger(InspyLogger):
                 If the handler type is invalid.
         """
         handler_type = handler_type.lower()
+        # print(f'Handler Type: {handler_type}')
         if handler_type not in HANDLER_TYPES:
             raise ValueError(
                         f'Invalid handler type: {handler_type}. '
@@ -398,13 +400,17 @@ class Logger(InspyLogger):
                     )
 
         level = getattr(self, f'{handler_type}_level')
+        # print(f'Level: {level}')
 
         for handler in self.logger.handlers:
-            if isinstance(handler, logging.FileHandler):
+            if isinstance(handler, HANDLER_TYPES[handler_type]):
+                # print(f"Found handler: {handler}")
                 handler.setLevel(level)
 
+        self.logger.setLevel(translate_to_logging_level(level))
+
         for child in self.children:
-            setattr(child, f'{handler_type}_level', level)
+            child.set_level(**{f'{handler_type}_level': level})
 
     def __build_name_from_caller(self, caller: inspect.FrameInfo, name: str = None):
         """
@@ -514,7 +520,7 @@ class Logger(InspyLogger):
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
 
-    def set_level(self, console_level=None, file_level=None, override=False) -> None:
+    def set_level(self, console_level=None, file_level=None, override=False, call_from_setter=False) -> None:
         """
         Updates the logging levels for both console and file handlers.
 
@@ -534,16 +540,28 @@ class Logger(InspyLogger):
 
         self.internal("Setting log levels")
 
-        # If we received a console level, update the console level.
+        if not call_from_setter:
+
+
+            # If we received a console level, update the console level.
+            if console_level is not None:
+                # print(f'Changing console level to {console_level}')
+                self.console_level = console_level
+
+            # If we received a file level, update the file level.
+            if file_level is not None:
+                # print(f'Changing file level to {file_level}')
+                self.file_level = file_level
+
         if console_level is not None:
-            self.console_level = console_level
+            self.__apply_level_change('console')
 
-        # If we received a file level, update the file level.
         if file_level is not None:
-            self.file_level = file_level
+            self.__apply_level_change('file')
 
-        # Set the logger level to the minimum of the console and file levels
-        self.logger.setLevel(min(self.__console_level, self.__file_level))
+
+
+
 
     @method_alias('add_child', 'add_child_logger', 'get_child_logger')
     def get_child(self, name=None, console_level=None, file_level=None, **kwargs) -> InspyLogger:
