@@ -108,13 +108,17 @@ class InspyLogger(ABC):
         pass
 
     @abstractmethod
+    def error(self, message):
+        pass
+
+    @abstractmethod
     def info(self, message):
         pass
 
     @abstractmethod
-    def warning(self, message):
+    def set_level(self, console_level: str = None, file_level: str = None):
         pass
 
     @abstractmethod
-    def error(self, message):
+    def warning(self, message):
         pass

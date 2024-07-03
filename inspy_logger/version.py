@@ -1,23 +1,21 @@
 import requests
-import packaging
 from packaging import version as pkg_version
 
 RELEASE_MAP = {
-    'dev': 'Development Build',
-    'alpha': 'Alpha Build',
-    'beta': 'Beta Build',
-    'rc': 'Release Candidate Build',
-    'final': 'Final Release Build'
-}
-
+        'dev':   'Development Build',
+        'alpha': 'Alpha Build',
+        'beta':  'Beta Build',
+        'rc':    'Release Candidate Build',
+        'final': 'Final Release Build'
+        }
 
 __VERSION__ = {
-    'major': 3,
-    'minor': 1,
-    'patch': 1,
-    'release': 'final',
-    'release_num': 0
-}
+        'major':       3,
+        'minor':       2,
+        'patch':       0,
+        'release':     'final',
+        'release_num': 0
+        }
 
 
 def parse_version():
@@ -56,6 +54,7 @@ def get_full_version_name():
     release_str = f" {release_type} {'' if __VERSION__['release'].lower() == 'final' else f'({release_num})'}"
     return f'v{ver}{release_str}'
 
+
 def get_pypi_info():
     """
     Gets the latest version information from PyPI.
@@ -77,7 +76,7 @@ class PyPiVersionInfo:
     """
     A class to represent the version information for this package from PyPi.
 
-    Attributes:
+    Properties:
         latest_stable (str):
             The latest stable version of the package on PyPi.
 
@@ -86,13 +85,13 @@ class PyPiVersionInfo:
     Since:
         v3.0
     """
-    __url                                  = 'https://pypi.org/pypi/inspy-logger/json'
-    __queried                              = False
-    __installed                            = parse_version()
+    __url = 'https://pypi.org/pypi/inspy-logger/json'
+    __queried = False
+    __installed = parse_version()
     __include_pre_release_for_update_check = False
-    __new_version_available_num            = None
-    __checked_for_update                   = False
-    __installed_newer_than_latest          = None
+    __new_version_available_num = None
+    __checked_for_update = False
+    __installed_newer_than_latest = None
 
     def __init__(self, include_pre_release_for_update_check=__include_pre_release_for_update_check):
         self.__latest_stable = None
@@ -129,7 +128,7 @@ class PyPiVersionInfo:
 
     @property
     def installed_newer_than_latest(self):
-        return self.installed > self.latest_stable
+        return self.installed > pkg_version.parse(self.latest_stable)
 
     @include_pre_release_for_update_check.setter
     def include_pre_release_for_update_check(self, new):
@@ -161,7 +160,7 @@ class PyPiVersionInfo:
         Since:
             v3.0
         """
-        if self.__latest_stable is not  None:
+        if self.__latest_stable is not None:
             return pkg_version.parse(self.__latest_stable)
 
         return self.__latest_stable
@@ -224,22 +223,19 @@ class PyPiVersionInfo:
             v3.0
         """
         if not self.queried:
-            #print('Querying versions')
+            # print('Querying versions')
             self.__query_versions()
 
         if not self.checked_for_update:
-            #print('Checking for update')
+            # print('Checking for update')
             self.__compare_latest()
             self.__checked_for_update = True
 
         if self.new_version_available_num is None and not self.queried:
-            #print('Getting latest')
+            # print('Getting latest')
             self.__compare_latest()
 
         return self.new_version_available_num is not None
-
-
-
 
     def __query_versions(self):
         """
@@ -254,16 +250,14 @@ class PyPiVersionInfo:
         if not self.queried:
             resp = requests.get(self.__url)
             resp.raise_for_status()
-            #print(resp.status_code)
+            # print(resp.status_code)
             resp = resp.json()
 
             self.__all_versions = list(resp['releases'].keys())
-            #print(self.all_versions)
+            # print(self.all_versions)
 
             self.__latest_stable = resp['info']['version']
-            #print(self.latest_stable)
-
-
+            # print(self.latest_stable)
 
             self.__queried = True
 
@@ -275,11 +269,11 @@ class PyPiVersionInfo:
 
     def __get_latest(self):
         if not self.queried:
-            #print('Querying versions')
+            # print('Querying versions')
             self.__query_versions()
 
         return (
-            self.latest_pre_release
-            if self.include_pre_release_for_update_check
-            else self.latest_stable
+                self.latest_pre_release
+                if self.include_pre_release_for_update_check
+                else self.latest_stable
         )
