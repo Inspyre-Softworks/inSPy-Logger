@@ -18,6 +18,26 @@ class Announcement:
                  template: Optional[str] = None,
                  announcement_level: Optional[Union[int, str]] = None
                  ):
+        """
+        Initialize the announcement.
+
+        Parameters:
+            owner (InspyLogger):
+                The owner of the announcement.
+
+            template (Optional[str]):
+                The template for the announcement.
+
+            announcement_level (Optional[Union[int, str]]):
+                The logging level for the announcement.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError:
+                If the logging level is invalid.
+        """
 
         self.__owner = None
         self.__template = None
@@ -40,6 +60,13 @@ class Announcement:
 
     @property
     def announced(self) -> bool:
+        """
+        The announcement status. True if the announcement has been announced, False otherwise.
+
+        Returns:
+            bool:
+                The announcement status.
+        """
         return self.__announced
 
     @announced.setter
@@ -67,6 +94,13 @@ class Announcement:
 
     @property
     def announcement_level(self):
+        """
+        The logging level for the announcement.
+
+        Returns:
+            str:
+                The logging level for the announcement.
+        """
         return self.__announcement_level
 
     @announcement_level.setter
@@ -97,6 +131,13 @@ class Announcement:
 
     @property
     def announcement_text(self) -> str:
+        """
+        The announcement text.
+
+        Returns:
+            str:
+                The announcement text.
+        """
         if self.__announcement_text is None:
             raise ValueError('Announcement text has not been set. Try calling `replace_placeholders()` first.')
 
@@ -104,10 +145,29 @@ class Announcement:
 
     @announcement_text.setter
     def announcement_text(self, value: str) -> None:
+        """
+        Set the announcement text.
+
+        The announcement text is the text that will be logged when the announcement is announced.
+
+        Parameters:
+            value (str):
+                The announcement text
+
+        Returns:
+            None
+        """
         self.__announcement_text = value
 
     @property
     def level(self):
+        """
+        The logging level for the announcement.
+
+        Returns:
+            str:
+                The logging level for the announcement.
+        """
         return self.announcement_level
 
     @property
@@ -134,20 +194,85 @@ class Announcement:
 
     @property
     def replaced(self) -> bool:
+        """
+        The replacement status of the announcement. True if the placeholders have been replaced, False otherwise.
+
+        Returns:
+            bool:
+                The replacement status of the announcement.
+        """
         return self.__replaced
 
     @replaced.setter
     @validate_type(bool)
     def replaced(self, new: bool) -> None:
+        """
+        Set the replacement status of the announcement.
+
+        Parameters:
+            new (bool):
+                The replacement status of the announcement.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError:
+                If the announcement has already been replaced.
+        """
         self.__replaced = new
 
     @property
     def template(self) -> str:
+        """
+        The template for the announcement. A string with placeholders for the announcement.
+
+        Note:
+            The placeholders in the template are replaced with the values of the placeholders in the announcement.
+            Here's an example of a template:
+
+                ```python
+                'Initialized {name}.'
+                ```
+
+            In this example, `{name}` is a placeholder that will be replaced with the value of the built-in `name`
+            placeholder, which is the name of the owner of the announcement.
+
+        Returns:
+            str:
+                The template for the announcement.
+
+        """
         return self.__template
 
     @template.setter
     @validate_type(str)
     def template(self, new) -> None:
+        """
+        Set the template for the announcement.
+
+        Args:
+            new (str):
+                The template for the announcement. A string with placeholders for the announcement, e.g.
+                'Initialized {name}.'
+
+        Returns:
+            None
+
+        Raises:
+            ValueError:
+                If the announcement has already been announced, though this exception gets caught and a warning is
+                issued instead.
+
+            TypeError:
+                If the template is not a string.
+        """
+        if self.announced:
+            try:
+                raise ValueError('Announcement has already been announced. Property `template` remains unchanged!')
+            except ValueError as e:
+                warn(e.__str__())
+
         self.__template = new
 
     def announce(self):
@@ -167,8 +292,24 @@ class Announcement:
 
         self.announced = True
 
-
     def replace_placeholders(self):
+        """
+        Replace the placeholders in the announcement text with the values of the placeholders in the announcement. The
+        placeholders are replaced in the announcement text, which is the text that will be logged when the announcement
+        is announced.
+
+        Placeholders are replaced in the announcement text by calling the `filled_string` property of the placeholders,
+        which returns the value of the placeholders in the announcement.
+
+        Here's an example of a placeholder:
+
+            ```python
+            '{name}'
+            ```
+
+        Returns:
+            None
+        """
         if not self.replaced:
             self.announcement_text = self.placeholders.filled_string
             self.replaced = True
