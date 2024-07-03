@@ -15,6 +15,9 @@ build:
       - pip install poetry
     post_install:
       - VIRTUAL_ENV=$READTHEDOCS_VIRTUALENV_PATH poetry install --with docs
+    pre_build:
+      - poetry run sphinx-apidoc -o docs/source/ src/
+      - poetry run sphinx-build -M clean -b html docs/source/ docs/build/html
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
