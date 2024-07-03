@@ -12,7 +12,7 @@ RELEASE_MAP = {
 __VERSION__ = {
         'major':       3,
         'minor':       2,
-        'patch':       0,
+        'patch':       1,
         'release':     'final',
         'release_num': 0
         }
