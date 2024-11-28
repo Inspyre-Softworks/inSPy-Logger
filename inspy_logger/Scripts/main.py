@@ -1,11 +1,11 @@
 """
 
-File: 
+File:
     inspy_logger/Scripts/main.py
 
-Author: 
+Author:
     Inspyre Softworks
-    
+
 """
 INSPY_LOG_LEVEL = 'info'
 
@@ -14,7 +14,7 @@ PROGNAME = 'inspy-logger-tool'
 from argparse import ArgumentParser
 
 from inspy_logger.helpers.debug.environment import fetch_system_info
-from inspy_logger.version import get_local_version, PyPiVersionInfo
+from inspy_logger.version import parse_version, PyPiVersionInfo
 
 
 
@@ -22,7 +22,7 @@ from inspy_logger.version import get_local_version, PyPiVersionInfo
 
 parser = ArgumentParser('inspy-logger-version', description='Displays version information for inspy-logger.')
 
-parser.add_argument('-v', '--version', action='version', version=get_local_version())
+parser.add_argument('-v', '--version', action='version', version=parse_version())
 
 # ---- SET UP SUBPARSERS --------------------------------
 
@@ -32,18 +32,7 @@ subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
 
 update_parser =subparsers.add_parser('update', help='Checks for updates to inspy-logger.')
 
-update_parser.add_argument(
-    '-p', '--pre-release',
-    action='store_true',
-    help='When checking for updates, include pre-release versions.'
-)
-
-update_parser.add_argument(
-    '--more-info',
-    action='store_true',
-    default=False,
-    help='Prints more information about the update check.'
-)
+update_parser.add_argument('-p', '--pre-release', action='store_true', help='When checking for updates, include pre-release versions.')
 
 # ---- DEBUG COMMAND --------------------------------
 
@@ -73,6 +62,10 @@ else:
     INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
 
 
+def get_parser():
+    return parser
+
+
 def debug(args = parsed_args):
     if args.markdown:
         fmt = 'markdown'
@@ -84,10 +77,6 @@ def debug(args = parsed_args):
     fetch_system_info(copy_to_clipboard=args.copy_to_clipboard, format_type=fmt, print_to_console=args.print)
 
 
-def update_check(version_parser, more_info=parsed_args.more_info, include_pre_release=INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK):
-    version_parser.update(more_info=more_info)
-
-
 
 def main():
 
@@ -95,14 +84,13 @@ def main():
 
     ACTIONS = {
         'default': version.print_version_info,
+        'update': version.update,
         'debug': debug,
 
     }
 
     if parsed_args.subcommand is None:
         parsed_args.subcommand = 'default'
-    elif parsed_args.subcommand == 'update':
-        ACTIONS[parsed_args.subcommand] = lambda: update_check(version)
 
     # Run the action.
     ACTIONS[parsed_args.subcommand]()

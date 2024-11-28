@@ -5,9 +5,7 @@ import sys
 import pyperclip
 from pyperclip import copy
 
-from inspy_logger.version import get_local_version
-from inspy_logger.common.meta.helpers.api import get_package_info
-
+from inspy_logger.version import parse_version
 
 VALID_DATA_FORMATS = [
     'markdown',
@@ -75,35 +73,6 @@ def is_valid_data_format(data_format):
     return data_format.lower() in VALID_DATA_FORMATS
 
 
-def parse_package_info(package_info):
-    """
-    Parses the package information and returns a dictionary with the relevant information.
-
-    Parameters:
-        package_info (dict):
-            A dictionary containing the package information.
-
-    Returns:
-        dict:
-            A dictionary containing the parsed package information.
-    """
-
-    release_date = None
-    release_objs =  package_info['release_objs']
-
-    for release in release_objs:
-        if release.version in package_info['releases']:
-
-
-    return {
-        'name': package_info['name'],
-        'version_info': {
-            'version':
-        },
-        'release_date': package_info
-    }
-
-
 def get_system_info(format_type='markdown'):
     """
     Gathers system information and formats it based on the specified format type.
@@ -138,19 +107,18 @@ def get_system_info(format_type='markdown'):
 
     os_version = f'{os_version} ({os_version_full})'
 
+
+
     python_version = platform.python_version()
 
-    package_info = get_package_info('inspy-logger')
 
-    parsed_pkg_info = parse_package_info(package_info)
 
     sys_info = {
-        'os_name': os_name,
-        'os_version': os_version,
-        'python_version': python_version,
-        'isl_version': get_local_version(),
-        'execution_mode': "REPL" if len(sys.argv) == 1 else "Script",
-        'package_info': package_info
+        'os_name': platform.system(),
+        'os_version': platform.release(),
+        'python_version': platform.python_version(),
+        'isl_version': parse_version(),
+        'execution_mode': "REPL" if len(sys.argv) == 1 else "Script"
     }
 
     # Format the information
@@ -163,9 +131,6 @@ def get_system_info(format_type='markdown'):
  - 🌈 **InSPy-Logger Version**: {sys_info['isl_version']}
  - - [{sys_info['execution_mode'] == 'Script'}] Script
    - [{sys_info['execution_mode'] == 'REPL'}] REPL
-:package: **Package Info:**
-    - 📦 **Name**: {package_info['name']}
-    - 📅 **Release Date**: {package_info['release_date']}
         """.strip()
     elif format_type == 'json':
         return json.dumps({
@@ -184,7 +149,6 @@ Python Version: {python_version}
 InSPy-Logger Version: {sys_info['isl_version']}
 Execution Mode: {sys_info['execution_mode']}
         """.strip()
-
 
 
 def fetch_system_info(copy_to_clipboard=False, format_type='markdown', print_to_console=None):

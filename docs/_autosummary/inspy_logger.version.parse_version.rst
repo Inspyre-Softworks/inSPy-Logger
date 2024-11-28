@@ -3,4 +3,4 @@ inspy\_logger.version.parse\_version
 
 .. currentmodule:: inspy_logger.version
 
-.. autofunction:: get_local_version
+.. autofunction:: parse_version

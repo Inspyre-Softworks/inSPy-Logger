@@ -5,9 +5,10 @@ from logging import Formatter
 from pathlib import Path
 
 from inspy_logger.__about__ import __PROG__
-from inspy_logger.constants import LEVEL_MAP, DEFAULT_LOGGING_LEVEL
+from inspy_logger.constants import LEVEL_MAP, DEFAULT_LOGGING_LEVEL, HANDLER_TYPES
 from inspy_logger.helpers.decorators import validate_type
 from inspy_logger.helpers.descriptors import RestrictedSetter
+from typing import Any, Optional, Union
 
 """
 This module contains utility functions and classes for handling logging and
@@ -22,19 +23,19 @@ __all__ = [
     "determine_client_prog_name",
     "determine_start_block",
     "find_argument_parser",
+    "find_key_by_value",
     "find_valid_vars_in_call_stack",
     "find_variable_in_call_stack",
     "get_level_name",
     "is_number",
     "translate_to_logging_level",
+    "translate_to_logging_level_str",
     "VALID_DEV_NAME_VARS",
     "VALID_LOG_FILE_VARS",
     "VALID_PROG_NAME_VARS",
     'determine_log_file_path',
     'determine_log_filepath',
     'RestrictedSetter',
-    'validate_type',
-    'ValidVars'
 ]
 
 
@@ -110,6 +111,52 @@ class ValidVars:
         console.print(table)
 
 
+def replace_placeholders(
+        string: str,
+        replacement_map: dict,
+        ignore_case: bool = False,
+        open_brace: str = '{',
+        close_brace: str ='}'
+
+    ):
+    """
+    Replaces placeholders in a string with values from a replacement map.
+
+    Parameters:
+        string (str):
+            The string to replace placeholders in.
+
+        replacement_map (dict):
+            The map of placeholders and their replacements.
+
+        ignore_case (bool, optional):
+            A flag indicating whether to ignore the case of the placeholders. Defaults to False.
+
+        open_brace (str, optional):
+            The opening brace of the placeholders. Defaults to '{'.
+
+        close_brace (str, optional):
+            The closing brace of the placeholders. Defaults to '}'.
+
+    Returns:
+        str:
+            The string with placeholders replaced.
+
+    Example:
+        >>> replace_placeholders("Hello, {name}!", {"<name>": "John"})
+        "Hello, John!"
+
+    Since:
+        v3.1.0
+    """
+    for placeholder, replacement in replacement_map.items():
+        full_placeholder = f'{open_brace}{placeholder}{close_brace}'
+        string = string.replace(full_placeholder, replacement)
+
+    return string
+
+
+
 VALID_LOG_FILE_VARS = [
     'LOG_FILE',
     'LOG_FILE_PATH',
@@ -179,7 +226,7 @@ class CustomFormatter(Formatter):
         """
         Replaces <ipython-input-...> pattern in record.pathname with 'iPython'.
 
-        Args:
+        Parameters:
             record (logging.LogRecord): The record to format.
 
         Returns:
@@ -196,7 +243,7 @@ def clean_module_name(module_name):
     """
     Replaces <ipython-input-...> pattern in the given module name with 'iPython'.
 
-    Args:
+    Parameters:
         module_name (str): The module name to clean.
 
     Returns:
@@ -230,12 +277,39 @@ def determine_level(client_prog_name):
     return level
 
 
+def find_key_by_value(dictionary: dict, value: Any) -> Union[str, None]:
+    """
+    Find the first key in the :param:`dictionary` that corresponds to the given :param:`value`.
+
+    Parameters:
+        dictionary (dict):
+            The dictionary to search.
+
+        value (Any):
+            The value to search for.
+
+    Returns:
+        key (str):
+            The first key that matches the value. If no key is found, return None.
+
+    Example:
+        >>> d = {'a': 1, 'b': 2, 'c': 3}
+        >>> find_key_by_value(d, 2)  # Returns 'b'
+    """
+    for key, val in dictionary.items():
+        if val == value:
+            return key
+
+    return None
+
+
+
 def is_number(string, force_integer=False, rounding=None):
     """
     Checks if a given string can be converted to a number and optionally
     rounds or converts the result to an integer.
 
-    Args:
+    Parameters:
         string (str): The string to check.
         force_integer (bool, optional): If True, the result will be converted to an integer.
         rounding (int, optional): The number of decimal places to round to.
@@ -286,7 +360,7 @@ def translate_to_logging_level(level_str):
     """
     Translates a given string to a logging level.
 
-    Args:
+    Parameters:
         level_str (str): The string to translate.
 
     Returns:
@@ -301,11 +375,38 @@ def translate_to_logging_level(level_str):
     return LEVEL_MAP.get(level_str)
 
 
+def translate_to_logging_level_str(level):
+    """
+    Translates a given logging level to a string.
+
+    Parameters:
+        level (int):
+            The logging level to translate.
+
+    Returns:
+        str:
+            The corresponding logging level string, or None if the level does not correspond to a string.
+
+    Raises:
+        ValueError:
+            If the logging level is invalid.
+
+    Example:
+        >>> translate_to_logging_level_str(logging.INFO)
+        'INFO'
+    """
+    res = find_key_by_value(LEVEL_MAP, level)
+    if not res:
+        raise ValueError(f"Invalid logging level: {level}")
+
+    return res.upper()
+
+
 def get_level_name(level: int) -> (str, None):
     """
     Gets the name of the logging level.
 
-    Args:
+    Parameters:
         level (int):
             The logging level.
 
@@ -313,24 +414,18 @@ def get_level_name(level: int) -> (str, None):
         str:
             The name of the logging level.
 
-        None:
-            If the logging level is not found.
+    Raises:
+        ValueError:
+            If the logging level is invalid.
     """
-    return next(
-        (
-            level_name.upper()
-            for level_name, level_value in LEVEL_MAP.items()
-            if level_value == level
-        ),
-        None,
-    )
+    return translate_to_logging_level_str(level)
 
 
 # def find_variable_in_call_stack(var_name, default=None):
 #     """
 #     Searches for a variable in the namespaces of all modules in the call stack.
 #
-#     Args:
+#     Parameters:
 #         var_name (str): The name of the variable to find.
 #         default: Default value to return if the variable is not found.
 #
@@ -358,7 +453,7 @@ def find_variable_in_call_stack(var_name, ignore_inspy_logger: bool = False, def
     """
     Searches for a variable in the namespaces of all modules in the call stack.
 
-    Args:
+    Parameters:
         var_name (str): The name of the variable to find.
         ignore_inspy_logger (bool): Whether to ignore variables from the Inspy-Logger module.
         default: Default value to return if the variable is not found.
@@ -395,7 +490,7 @@ def iterate_valid_vars(valid_vars, mode='strict'):
     """
     Iterates through the valid variables based on the mode.
 
-    Args:
+    Parameters:
         valid_vars (list): The list of valid variables to iterate through.
         mode (str, optional): The mode to use. Defaults to 'strict'.
 
@@ -543,3 +638,11 @@ def find_argument_parser():
     for var in VALID_ARGS_VARS:
         if arg_parser := find_variable_in_call_stack(var):
             return arg_parser
+
+
+def get_existing_logger(logger_name):
+    from inspy_logger.engine import get_loggers
+    loggers = get_loggers()
+
+    if logger_name in loggers:
+        return loggers[logger_name]

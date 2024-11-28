@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-
-initialized = False
-
 import contextlib
 import sys
 import inspect
+import os
 import logging
 from pypattyrn.behavioral.null import Null
-from inspy_logger.common import PROG_NAME as ISL_PROG_NAME, DEFAULT_LOGGING_LEVEL, LEVELS
-from inspy_logger.config.dirs import DEFAULT_LOG_FILE_PATH
+from inspy_logger.common import PROG_NAME as ISL_PROG_NAME, DEFAULT_LOGGING_LEVEL, DEFAULT_LOG_FILE_PATH, LEVELS
 from inspy_logger.helpers import find_variable_in_call_stack, check_preemptive_level_set, find_argument_parser, determine_start_block, determine_level
 
 from inspy_logger.helpers import (
@@ -35,6 +32,7 @@ logging.setLogRecordFactory(record_factory)
 
 
 from inspy_logger.engine import Logger
+from inspy_logger.helpers import get_existing_logger
 
 __all__ = [
     "clean_module_name",
@@ -108,7 +106,7 @@ def start_logger(override_block=True):
         if isinstance(PROG_LOGGER, Null):
             from rich import print
             print("The logger has been blocked from starting. To start the logger, run `start_logger()`.")
-        
+
 
 InspyLogger = Logger
 
@@ -139,6 +137,3 @@ def getLogger(*args, **kwargs):
         deprecation_warning_deliveries += 1
 
     return InspyLogger(*args, **kwargs)
-
-
-initialized=True

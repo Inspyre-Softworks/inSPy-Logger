@@ -1,18 +1,22 @@
 """
 
 
-Author: 
+Author:
     Inspyre Softworks
 
 Project:
     inSPy-Logger
 
-File: 
+File:
     inspy_logger/types.py
- 
+
 
 Description:
-    
+    This module contains the LogLevel class for the logger.
+
+    This class is used to define the log levels for the logger.
+
+    The LogLevel class is a subclass of LogLevel
 
 """
 from inspy_logger.constants import LEVEL_MAP

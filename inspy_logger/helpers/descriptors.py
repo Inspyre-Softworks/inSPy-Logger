@@ -163,7 +163,7 @@ class RestrictedSetter:
         self.restrict_setter = restrict_setter
 
         # Ensure `allowed_types` is a tuple or list
-        if not isinstance(allowed_types, tuple):
+        if not isinstance(allowed_types, (tuple, list)):
             allowed_types = (allowed_types,)
 
         self.allowed_types = allowed_types if isinstance(allowed_types, (tuple, list)) else (allowed_types,)
@@ -244,8 +244,8 @@ class RestrictedSetter:
             if self.exception:
                 raise self.exception(**self.exception_args)
             raise PermissionError("Condition for setting property not met.")
-        print(self.allowed_types)
-        if (self.allowed_types and not isinstance(value, tuple(self.allowed_types))) and value is not None:
+
+        if (self.allowed_types and not isinstance(value, self.allowed_types)) and value is not None:
             raise TypeError(
                 f"Value must be of type {', '.join([t.__name__ for t in self.allowed_types])}, got type {type(value).__name__}.")
 

@@ -1,21 +1,22 @@
 """
 
 
-Author: 
+Author:
     Inspyre Softworks
 
 Project:
     inSPy-Logger
 
-File: 
+File:
     inspy_logger/helpers/decorators.py
- 
+
 
 Description:
     Contains decorators used by the inSPy-Logger package.
 
 """
 from functools import wraps
+from typing import Callable, Optional
 
 
 __all__ = [
@@ -52,7 +53,7 @@ def method_alias(*alias_names: (str, list[str])):
     """
     A decorator that allows you to add aliases to a class's method.
 
-    Args:
+    Parameters:
         *alias_names (str, list[str]):
             The name(s) of the alias(es) to add.
 
@@ -71,7 +72,7 @@ def method_logger(func):
     """
     A decorator to log a method's execution.
 
-    Args:
+    Parameters:
         func (method):
             The method to log.
 
@@ -101,7 +102,7 @@ def add_aliases(cls):
     """
     A decorator to add aliases to a class's methods.
 
-    Args:
+    Parameters:
         cls (class):
             The class to add aliases to.
 
@@ -120,7 +121,7 @@ def count_invocations(method):
     """
     Decorator that counts the number of invocations of the method it decorates.
 
-    Args:
+    Parameters:
         method (Callable):
             The method to count invocations for.
 
@@ -145,45 +146,40 @@ def validate_type(
         preferred_type=None,
         allowed_values=None,
         case_sensitive=True,
-        lock_after_setting=False
-):
+        conversion_funcs: Optional[dict] = None):
     """
     A decorator for validating the type and optionally the value of a value passed to a class
     property setter, with an option to convert to a preferred type if specified and to enforce
     value restrictions.
 
     Parameters:
-
         preferred_type (type, optional):
-            The preferred type to which values should be converted, if possible.
+            The preferred type to which values should be converted if possible. If None, no
+            conversion is attempted.
 
-            - If `NoneType`, no conversion is attempted.
-
-        *allowed_types (List[type], optional):
+        *allowed_types:
             Variable length list of allowed types for the property value.
 
-        allowed_values (List[Any], optional):
-            An iterable of values that are allowed.
-
-            - If None, all values of the correct type are allowed.
+        allowed_values (iterable, optional):
+            An iterable of values that are allowed. If None, all values of the correct type are allowed.
 
         case_sensitive (bool, optional):
-            Specifies whether string comparisons should be case-sensitive.
-            (Optional, defaults to `True`)
+            Specifies whether string comparisons should be case-sensitive. Defaults to True. Ignored for non-string
+            types.
 
-            - **Ignored for non-string types**
-
-        lock_after_setting (bool, optional):
-            Whether to lock the property value after it has been set.
-            Defaults to False.
+        conversion_funcs (dict, optional):
+            A dictionary of conversion functions to use for converting
 
     Returns:
         A decorator function for the property setter.
 
     Raises:
-        TypeError: If the incoming value does not match one of the allowed types, cannot be
-                   converted to the preferred type, or is not in the list of allowed values.
-        ValueError: If the value is of the correct type but not in the allowed values list.
+        TypeError:
+            If the incoming value does not match one of the allowed types, cannot be onverted to the preferred type,
+            or is not in the list of allowed values.
+
+        ValueError:
+            If the value is of the correct type but not in the allowed values list.
 
     Example:
         >>> class MyClass:
@@ -191,8 +187,7 @@ def validate_type(
         ...     def my_property(self):
         ...         return self._my_property
         ...
-        ...
-        @my_property.setter
+        ...     @my_property.setter
         ...     @validate_type(str, allowed_values=["hello", "world"], case_sensitive=False)
         ...     def my_property(self, value):
         ...         self._my_property = value
@@ -206,14 +201,16 @@ def validate_type(
     def decorator(func):
         @wraps(func)
         def wrapper(self, value):
-            print(hex(id(self)))
             if not isinstance(value, tuple(allowed_types)):
                 allowed = ', '.join([t.__name__ for t in allowed_types])
                 raise TypeError(f"Value must be of type {allowed}, got type {type(value).__name__}")
 
             if preferred_type and not isinstance(value, preferred_type):
                 try:
-                    value = preferred_type(value)
+                    if conversion_funcs and type(value) in conversion_funcs:
+                        value = conversion_funcs[type(value)](value)
+                    else:
+                        value = preferred_type(value)
                 except Exception as e:
                     raise TypeError(f"Could not convert value to preferred type {preferred_type.__name__}: {e}")
 
@@ -239,7 +236,7 @@ def validate_func_args(*validators):
     A decorator for validating the type and optionally the value of arguments passed to a function.
     Each argument can have its own set of allowed types, a preferred type, and allowed values.
 
-    Args:
+    Parameters:
         *validators (dict): Each dictionary in validators specifies the validation rules for one argument.
                             The keys in the dictionary can be:
                             - 'allowed_types': A tuple of allowed types for the argument.
