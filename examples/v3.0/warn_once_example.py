@@ -16,8 +16,9 @@ class MyClass(Loggable):
         log = self.create_child_logger()
         # Define a warning message to be logged.
         WARNING_MSG = 'This is a warning message!'
-
+        
         for _ in range(n_iters):
+
             if warn_once:
                 # Log the warning message only once if warn_once is True.
                 log.warn_once(WARNING_MSG)

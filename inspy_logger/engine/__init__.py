@@ -559,6 +559,7 @@ class Logger(InspyLogger):
         """
         Retrieves or creates a nested child logger based on a dot-separated name.
     
+
         Parameters:
             name (str, optional):
                 Dot-separated name representing the hierarchy of child loggers.
@@ -606,6 +607,7 @@ class Logger(InspyLogger):
                 current_logger = child_logger
 
         return current_logger
+
 
     @method_alias('get_children_names', 'get_child_loggers')
     def get_child_names(self) -> List:
