@@ -16,7 +16,8 @@ from inspy_logger.helpers import (
     translate_to_logging_level, CustomFormatter, get_level_name,
     translate_to_logging_level_str
     )
-from inspy_logger.helpers.decorators import add_aliases, method_alias, count_invocations, validate_type
+from inspy_logger.helpers.decorators import add_aliases, method_alias, count_invocations, validate_type, \
+    property_logging
 from typing import List, Union, Optional
 from pathlib import Path
 from warnings import warn
@@ -331,6 +332,10 @@ class Logger(InspyLogger):
         return hasattr(sys, 'ps1') and sys.ps1
 
     @property
+    def isEnabledFor(self, level):
+        return self.logger.isEnabledFor(level)
+
+    @property
     def name(self) -> str:
         """
         Returns the name of the logger instance.
@@ -552,43 +557,57 @@ class Logger(InspyLogger):
     @method_alias('add_child', 'add_child_logger', 'get_child_logger')
     def get_child(self, name=None, console_level=None, file_level=None, **kwargs) -> InspyLogger:
         """
-        Retrieves a child logger with the specified name, console level, and file level.
+        Retrieves or creates a nested child logger based on a dot-separated name.
+    
 
         Parameters:
             name (str, optional):
-                The name of the child logger. Defaults to None.
-
-            console_level (int, optional):
-                The console log level for the child logger. Defaults to None.
-
-            file_level (int, optional):
-                The file log level for the child logger. Defaults to None.
-
+                Dot-separated name representing the hierarchy of child loggers.
+                E.g., 'child.method' will create or retrieve 'child' and then 'method' as nested children.
+    
+            console_level (int or str, optional):
+                Console log level for the child logger(s).
+    
+            file_level (int or str, optional):
+                File log level for the child logger(s).
+    
         Returns:
             InspyLogger:
-                The child logger with the specified name, console level, and file level.
+                The deepest child logger in the hierarchy specified by the name.
         """
-        # Get the name of the calling function if no name is provided
-        caller_frame = inspect.stack()[1]
+        if name is None:
+            # Get the name from the caller's function if not provided
+            caller_frame = inspect.stack()[1]
+            name = self.__build_name_from_caller(caller_frame, name)
 
-        cl_name = self.__build_name_from_caller(caller_frame, name)
+        name_parts = name.split('.')
+        current_logger = self
 
-        if found_child := self.find_child_by_name(cl_name, exact_match=True):
-            return found_child
+        for part in name_parts:
+            # Build the full name for the child logger
+            cl_name = f"{current_logger.name}.{part}"
 
-        # Determine the console level and file level for the child logger.
+            if found_child := current_logger.find_child_by_name(
+                cl_name, exact_match=True
+            ):
+                current_logger = found_child
+            else:
+                # Create a new child logger
+                console_level = console_level or current_logger.console_level
+                file_level = file_level or current_logger.file_level
 
-        # If the console level is not provided, use the console level of the parent logger
-        console_level = console_level or self.console_level
+                child_logger = Logger(
+                    name=cl_name,
+                    console_level=console_level,
+                    file_level=file_level,
+                    parent=current_logger,
+                    **kwargs
+                )
+                current_logger.children.append(child_logger)
+                current_logger = child_logger
 
-        # If the file level is not provided, use the file level of the parent logger
-        file_level = file_level or self.file_level
+        return current_logger
 
-        child_logger = Logger(name=cl_name, console_level=console_level, file_level=file_level, parent=self, **kwargs)
-
-        self.children.append(child_logger)
-
-        return child_logger
 
     @method_alias('get_children_names', 'get_child_loggers')
     def get_child_names(self) -> List:
