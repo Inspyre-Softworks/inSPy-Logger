@@ -334,6 +334,10 @@ class Logger(InspyLogger):
         return hasattr(sys, 'ps1') and sys.ps1
 
     @property
+    def isEnabledFor(self, level):
+        return self.logger.isEnabledFor(level)
+
+    @property
     def name(self) -> str:
         """
         Returns the name of the logger instance.
@@ -559,7 +563,7 @@ class Logger(InspyLogger):
     def get_child(self, name=None, console_level=None, file_level=None, is_method=False, **kwargs) -> InspyLogger:
         """
         Retrieves or creates a nested child logger based on a dot-separated name.
-    
+
         Parameters:
             name (str, optional):
                 Dot-separated name representing the hierarchy of child loggers.
@@ -578,6 +582,7 @@ class Logger(InspyLogger):
         if name is None:
             # Get the name from the caller's function if not provided
             caller_frame = inspect.stack()[1]
+
             caller_name = caller_frame.function
 
             if caller_name in ("<module>", "<lambda>", None):
@@ -605,6 +610,8 @@ class Logger(InspyLogger):
             ):
                 current_logger = found_child
             else:
+
+                # Create a new child logger
                 console_level = console_level or current_logger.console_level
                 file_level = file_level or current_logger.file_level
 
@@ -615,7 +622,7 @@ class Logger(InspyLogger):
                     parent=current_logger,
                     **kwargs
                 )
-
+                
                 current_logger.children.append(child_logger)
                 current_logger = child_logger
 
