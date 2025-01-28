@@ -155,6 +155,8 @@ class Logger(InspyLogger):
         if not getattr(self, 'buffering_handler', None):
             self.set_up_handlers()
 
+        self.file_level = translate_to_logging_level(file_level)
+
         self.__announcement = None
 
         if announce_on_init:
@@ -500,7 +502,7 @@ class Logger(InspyLogger):
                 tracebacks_show_locals=True
                 )
         formatter = CustomFormatter(
-                f"[{self.logger.name}] %(message)s"
+                f"%(asctime)s - {self.name} - %(message)s |-| %(funcName)s:%(lineno)d"
                 )
         console_handler.setFormatter(formatter)
         console_handler.setLevel(self.__console_level)
@@ -514,8 +516,9 @@ class Logger(InspyLogger):
         self.ensure_log_file_path()
         file_handler = logging.FileHandler(self.file_path)
         file_handler.setLevel(self.__file_level)
+        file_handler.set_name('InspyLogger|FileHandler')
         formatter = CustomFormatter(
-                "%(asctime)s - [%(name)s] - %(levelname)s - %(message)s |-| %(file_name)s:%(lineno)d"
+                f"[%(asctime)s] - %(levelname)s - {self.name} - %(message)s |-| %(module)s:%(lineno)d"
                 )
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
@@ -680,7 +683,7 @@ class Logger(InspyLogger):
         return results
 
     @count_invocations
-    def debug(self, message, *args, stack_level=2, **kwargs):
+    def debug(self, message, *args, stack_level=4, **kwargs):
         """
         Logs a debug message.
 
@@ -693,7 +696,7 @@ class Logger(InspyLogger):
         self._log(logging.DEBUG, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def info(self, message, *args, stack_level=2, **kwargs):
+    def info(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an info message.
 
@@ -709,7 +712,7 @@ class Logger(InspyLogger):
         """
         self._log(logging.INFO, message, args=args, stacklevel=stack_level, **kwargs)
 
-    def internal(self, message, *args, stack_level=2, **kwargs):
+    def internal(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an internal message.
 
@@ -724,7 +727,7 @@ class Logger(InspyLogger):
             self._log(INTERNAL, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def warning(self, message, *args, stack_level=2, **kwargs):
+    def warning(self, message, *args, stack_level=4, **kwargs):
         """
         Logs a warning message.
 
@@ -742,7 +745,7 @@ class Logger(InspyLogger):
         self._log(logging.WARNING, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def error(self, message, *args, stack_level=2, **kwargs):
+    def error(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an error message.
 
@@ -756,7 +759,7 @@ class Logger(InspyLogger):
         Returns:
             None
         """
-        self._log(logging.ERROR, message, args=(), stacklevel=2, **kwargs)
+        self._log(logging.ERROR, message, args=(), stacklevel=stack_level, **kwargs)
 
     def __repr__(self):
         name = self.name

@@ -19,6 +19,8 @@ Description:
 
 import logging
 from rich.logging import RichHandler
+from inspy_logger.utils import check_if_interactive
+
 
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
 
@@ -44,5 +46,5 @@ LEVELS = [level.upper() for level in LEVEL_MAP]
 INTERNAL = LEVEL_MAP['debug'] - 5
 
 
-INTERACTIVE_SESSION = __name__ != '__main__'
+INTERACTIVE_SESSION = check_if_interactive()
 """A flag to indicate whether the session is interactive."""
