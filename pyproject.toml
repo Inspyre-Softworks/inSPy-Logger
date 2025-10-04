@@ -2,7 +2,7 @@
 name = "inspy-logger"
 version = "3.2.3"
 description = "Colorable, scalable logger for CLI"
-authors = ["Taylor B. <tayjaybabee@gmail.com>"]
+authors = ["Taylor B. <t.blackstone@inspyre.tech>"]
 license = "MIT"
 readme = "README.md"
 
@@ -10,14 +10,14 @@ readme = "README.md"
 python = ">=3.10,<4.0"
 rich = "^13.7.1"
 requests = "^2.32.3"
-urllib3 = ">1.26.5, <2"
 python-box = "^7.2.0"
 packaging = "^24.1"
 appdirs = "^1.4.4"
 pypattyrn = "^1.2"
 platformdirs = "^4.2.2"
 pyperclip = "^1.8.2"
-psutil = "^6.0.0"
+psutil = ">6.0.0, <8.0.0"
+urllib3 = "^2.5.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "^7.3.7"
@@ -28,7 +28,7 @@ sphinxcontrib-napoleon = "^0.7"
 sphinx-argparse = "^0.4.0"
 sphinxcontrib-argdoc = "^0.1.3"
 autoclasstoc = "^1.6.0"
-sphinx-autodoc-annotation = "^1.0.post1"
+sphinx-autodoc-annotation = "^1.0"
 
 [tool.poetry.group.dev.dependencies]
 ptipython = "^1.0.1"
