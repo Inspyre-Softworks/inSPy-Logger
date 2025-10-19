@@ -19,6 +19,7 @@ import logging
 
 
 LEVEL_MAP = {
+    'internal': 5,
     'debug': logging.DEBUG,
     'info': logging.INFO,
     'warning': logging.WARNING,

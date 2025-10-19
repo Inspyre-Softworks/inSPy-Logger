@@ -32,6 +32,8 @@ class Logger(InspyLogger):
     LEVELS = LEVELS
     INTERACTIVE_SESSION = INTERACTIVE_SESSION
 
+    TRACE_LEVEL_NUM = 5
+
     instances = {}  # A dictionary to hold instances of the Logger class.
 
     def __new__(cls, name, *args, **kwargs):
@@ -48,7 +50,7 @@ class Logger(InspyLogger):
         """
 
         if name not in cls.instances:
-            instance = super(Logger, cls).__new__(cls)
+            instance = super().__new__(cls)
             cls.instances[name] = instance
             return instance
         return cls.instances[name]
@@ -152,6 +154,8 @@ class Logger(InspyLogger):
 
         if not getattr(self, 'buffering_handler', None):
             self.set_up_handlers()
+
+        self.file_level = translate_to_logging_level(file_level)
 
         self.__announcement = None
 
@@ -328,8 +332,18 @@ class Logger(InspyLogger):
         self._file_path = new
 
     @property
-    def interactive_session(self) -> bool:
+    def is_interactive_session(self) -> bool:
         return hasattr(sys, 'ps1') and sys.ps1
+
+    @property
+    def interactive_session(self) -> bool:
+        """Backward compatible alias for ``is_interactive_session``."""
+        warn(
+            "'interactive_session' is deprecated; use 'is_interactive_session' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.is_interactive_session
 
     @property
     def isEnabledFor(self, level):
@@ -465,6 +479,9 @@ class Logger(InspyLogger):
 
         return name in self.child_names
 
+    def isEnabledFor(self, level):
+        return self.logger.isEnabledFor(level)
+
     @validate_type(str, Path, preferred_type=Path)
     def set_file_path(self, file_path):
         """
@@ -495,7 +512,7 @@ class Logger(InspyLogger):
                 tracebacks_show_locals=True
                 )
         formatter = CustomFormatter(
-                f"[{self.logger.name}] %(message)s"
+                f"%(asctime)s - {self.name} - %(message)s |-| %(funcName)s:%(lineno)d"
                 )
         console_handler.setFormatter(formatter)
         console_handler.setLevel(self.__console_level)
@@ -509,8 +526,9 @@ class Logger(InspyLogger):
         self.ensure_log_file_path()
         file_handler = logging.FileHandler(self.file_path)
         file_handler.setLevel(self.__file_level)
+        file_handler.set_name('InspyLogger|FileHandler')
         formatter = CustomFormatter(
-                "%(asctime)s - [%(name)s] - %(levelname)s - %(message)s |-| %(file_name)s:%(lineno)d"
+                f"[%(asctime)s] - %(levelname)s - {self.name} - %(message)s |-| %(module)s:%(lineno)d"
                 )
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
@@ -555,10 +573,9 @@ class Logger(InspyLogger):
             self.__apply_level_change('file')
 
     @method_alias('add_child', 'add_child_logger', 'get_child_logger')
-    def get_child(self, name=None, console_level=None, file_level=None, **kwargs) -> InspyLogger:
+    def get_child(self, name=None, console_level=None, file_level=None, is_method=False, **kwargs) -> InspyLogger:
         """
         Retrieves or creates a nested child logger based on a dot-separated name.
-    
 
         Parameters:
             name (str, optional):
@@ -578,36 +595,51 @@ class Logger(InspyLogger):
         if name is None:
             # Get the name from the caller's function if not provided
             caller_frame = inspect.stack()[1]
-            name = self.__build_name_from_caller(caller_frame, name)
+
+            caller_name = caller_frame.function
+
+            if caller_name in ("<module>", "<lambda>", None):
+                caller_name = 'unnamed'
+
+            name = caller_name
+
+        if 'override' in kwargs:
+            kwargs.pop('override')
 
         name_parts = name.split('.')
         current_logger = self
 
-        for part in name_parts:
-            # Build the full name for the child logger
-            cl_name = f"{current_logger.name}.{part}"
+        for i, part in enumerate(name_parts):
+            if i == len(name_parts) - 1 and is_method:
+                # Last part of the name is a method, so we need to create a child logger for it
+                # with ':' as the separator instead of '.' to avoid conflicts with existing loggers, and to indicate
+                # that it's a method logger
+                cl_name = f'{current_logger.name}:{part}'
+            else:
+                cl_name = f"{current_logger.name}.{part}"
 
             if found_child := current_logger.find_child_by_name(
                 cl_name, exact_match=True
             ):
                 current_logger = found_child
             else:
+
                 # Create a new child logger
                 console_level = console_level or current_logger.console_level
                 file_level = file_level or current_logger.file_level
 
                 child_logger = Logger(
-                    name=cl_name,
+                    name= cl_name,
                     console_level=console_level,
                     file_level=file_level,
                     parent=current_logger,
                     **kwargs
                 )
+                
                 current_logger.children.append(child_logger)
                 current_logger = child_logger
 
         return current_logger
-
 
     @method_alias('get_children_names', 'get_child_loggers')
     def get_child_names(self) -> List:
@@ -661,7 +693,7 @@ class Logger(InspyLogger):
         return results
 
     @count_invocations
-    def debug(self, message, *args, stack_level=2, **kwargs):
+    def debug(self, message, *args, stack_level=4, **kwargs):
         """
         Logs a debug message.
 
@@ -674,7 +706,7 @@ class Logger(InspyLogger):
         self._log(logging.DEBUG, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def info(self, message, *args, stack_level=2, **kwargs):
+    def info(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an info message.
 
@@ -690,7 +722,7 @@ class Logger(InspyLogger):
         """
         self._log(logging.INFO, message, args=args, stacklevel=stack_level, **kwargs)
 
-    def internal(self, message, *args, stack_level=2, **kwargs):
+    def internal(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an internal message.
 
@@ -705,7 +737,7 @@ class Logger(InspyLogger):
             self._log(INTERNAL, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def warning(self, message, *args, stack_level=2, **kwargs):
+    def warning(self, message, *args, stack_level=4, **kwargs):
         """
         Logs a warning message.
 
@@ -723,7 +755,7 @@ class Logger(InspyLogger):
         self._log(logging.WARNING, message, args=args, stacklevel=stack_level, **kwargs)
 
     @count_invocations
-    def error(self, message, *args, stack_level=2, **kwargs):
+    def error(self, message, *args, stack_level=4, **kwargs):
         """
         Logs an error message.
 
@@ -737,7 +769,7 @@ class Logger(InspyLogger):
         Returns:
             None
         """
-        self._log(logging.ERROR, message, args=(), stacklevel=2, **kwargs)
+        self._log(logging.ERROR, message, args=(), stacklevel=stack_level, **kwargs)
 
     def __repr__(self):
         name = self.name
@@ -863,7 +895,7 @@ class Logger(InspyLogger):
 
         return self
 
-    def warn_once(self, message):
+    def warn_once(self, message, **kwargs):
         """
         Logs a warning message only once.
 
@@ -875,7 +907,8 @@ class Logger(InspyLogger):
             None
         """
         if message not in self.__warnings_issued:
-            self.warning(message)
+            stack_level = kwargs.get('stack_level', 4)
+            self.warning(message, stack_level=stack_level)
             self.warnings_issued.add(message)
 
     @staticmethod
@@ -901,7 +934,6 @@ class Logger(InspyLogger):
         """
         Low-level logging implementation, passing stacklevel to findCaller.
         """
-        # caller_frame = inspect.currentframe().f_back
         if INTERACTIVE_SESSION:
             stacklevel -= 1
 
