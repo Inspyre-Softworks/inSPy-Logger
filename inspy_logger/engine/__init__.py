@@ -336,6 +336,16 @@ class Logger(InspyLogger):
         return hasattr(sys, 'ps1') and sys.ps1
 
     @property
+    def interactive_session(self) -> bool:
+        """Backward compatible alias for ``is_interactive_session``."""
+        warn(
+            "'interactive_session' is deprecated; use 'is_interactive_session' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.is_interactive_session
+
+    @property
     def isEnabledFor(self, level):
         return self.logger.isEnabledFor(level)
 
@@ -897,7 +907,8 @@ class Logger(InspyLogger):
             None
         """
         if message not in self.__warnings_issued:
-            self.warning(message, stack_level=kwargs.get('stack_level', 2))
+            stack_level = kwargs.get('stack_level', 4)
+            self.warning(message, stack_level=stack_level)
             self.warnings_issued.add(message)
 
     @staticmethod
