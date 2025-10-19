@@ -132,7 +132,9 @@ class Loggable:
             name = inspect.stack()[1].function
 
         kwargs['is_method'] = is_method
-        return self.class_logger.get_child(name, override=override, **kwargs)
+
+        base_logger = self.log_device or self.class_logger
+        return base_logger.get_child(name, override=override, **kwargs)
 
     def create_logger(self, name=None, is_method=False, **kwargs):
         """
