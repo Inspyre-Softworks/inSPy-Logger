@@ -51,22 +51,11 @@ fmt_grp.add_argument('-J', '--json', action='store_true', help='Formats the debu
 
 fmt_grp.add_argument('-T', '--text', action='store_true', help='Formats the debug information in plain text.')
 
-# Parse the arguments
-parsed_args = parser.parse_args()
-
-# END PARSER SETUP
-
-if parsed_args.subcommand == 'update':
-    INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = parsed_args.pre_release
-else:
-    INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
-
-
 def get_parser():
     return parser
 
 
-def debug(args = parsed_args):
+def debug(args):
     if args.markdown:
         fmt = 'markdown'
     elif args.json:
@@ -78,14 +67,20 @@ def debug(args = parsed_args):
 
 
 
-def main():
+def main(argv=None):
+    parsed_args = parser.parse_args(argv)
+    include_pre_release = (
+        parsed_args.pre_release
+        if parsed_args.subcommand == "update"
+        else False
+    )
 
-    version = PyPiVersionInfo(INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK)
+    version = PyPiVersionInfo(include_pre_release)
 
     ACTIONS = {
         'default': version.print_version_info,
         'update': version.update,
-        'debug': debug,
+        'debug': lambda: debug(parsed_args),
 
     }
 

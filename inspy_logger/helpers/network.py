@@ -24,9 +24,11 @@ Date:
 from __future__ import annotations
 
 # Do our import
+from collections.abc import Sequence
 from urllib.parse import quote as url_safe
 
 import requests
+from platformdirs import user_cache_path
 from public_suffix_list import PublicSuffixList
 
 DEFAULT_TEST_HOSTS = [
@@ -43,10 +45,31 @@ hosts = []
 :obj:`list`[:obj:`Host`]:
     A list of host objects that will be used to connect to.
 """
-psl = PublicSuffixList()
+class _LazySuffixes(Sequence):
+    """Load the public suffix list only when network helpers need it."""
 
-URL_SUFFIXES = psl._suffixes
+    def __init__(self):
+        self._values = None
 
+    def _load(self):
+        if self._values is None:
+            suffix_list = PublicSuffixList(
+                cache_dir=str(user_cache_path("inspy-logger"))
+            )
+            self._values = tuple(suffix_list._suffixes)
+        return self._values
+
+    def __contains__(self, value):
+        return value in self._load()
+
+    def __getitem__(self, index):
+        return self._load()[index]
+
+    def __len__(self):
+        return len(self._load())
+
+
+URL_SUFFIXES = _LazySuffixes()
 VALID_TLDS = URL_SUFFIXES
 
 

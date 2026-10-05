@@ -2,6 +2,14 @@ import inspect
 from inspy_logger import LOG_DEVICE, Logger
 
 
+def _caller_name():
+    frame = inspect.currentframe()
+    try:
+        return frame.f_back.f_back.f_code.co_name
+    finally:
+        del frame
+
+
 class LoggableDescriptor:
     """
     Descriptor for accessing a logger specific to a class method.
@@ -9,22 +17,21 @@ class LoggableDescriptor:
 
     def __get__(self, instance, owner):
         if instance is None:
-            # Accessing through the class, not an instance
             return owner.class_logger
 
-        # Determine the calling method's name
-        stack = inspect.stack()
-        # Start from 1 to skip the current __get__ frame
-        for frame_record in stack[1:]:
-            if 'self' in frame_record.frame.f_locals and frame_record.frame.f_locals['self'] is instance:
-                method_name = frame_record.function
+        frame = inspect.currentframe()
+        try:
+            frame = frame.f_back
+            while frame:
+                if frame.f_locals.get("self") is instance:
+                    return instance.log_device.get_child(
+                        frame.f_code.co_name
+                    ).logger
+                frame = frame.f_back
+        finally:
+            del frame
 
-                break
-        else:
-            raise Exception("Could not determine the calling method's name.")
-
-        # Get a child logger named after the class and method
-        return instance.log_device.get_child(method_name)
+        raise RuntimeError("Could not determine the calling method name.")
 
 
 def _get_parent_logging_device():
@@ -81,10 +88,13 @@ class Loggable:
         if self.__class__.class_logger is None:
             self.__class__.class_logger = self.__log_device
 
+<<<<<<< Updated upstream
         # Do not assign self.method_logger here: it is a LoggableDescriptor,
         # and an instance attribute would shadow it so per-method child
                     # loggers never resolve.
 
+=======
+>>>>>>> Stashed changes
     @property
     def log_device(self):
         return self.__log_device
@@ -109,7 +119,7 @@ class Loggable:
             Logger: An instance of the Logger class that represents the child logger.
         """
         if name is None:
-            name = inspect.stack()[1][3]
+            name = _caller_name()
 
         full_name = f'{self.class_logger.name}:{name}'
 
@@ -122,7 +132,7 @@ class Loggable:
 
     def create_logger(self, **kwargs):
         if 'name' not in kwargs:
-            kwargs['name'] = inspect.stack()[1][3]
+            kwargs['name'] = _caller_name()
         return self.create_child_logger(**kwargs)
 
     def __is_member__(self):

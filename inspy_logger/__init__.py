@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 import contextlib
 import sys
-import inspect
-import os
-import logging
-from pypattyrn.behavioral.null import Null
 from inspy_logger.common import PROG_NAME as ISL_PROG_NAME, DEFAULT_LOGGING_LEVEL, DEFAULT_LOG_FILE_PATH, LEVELS
 from inspy_logger.helpers import find_variable_in_call_stack, check_preemptive_level_set, find_argument_parser, determine_start_block, determine_level
 
@@ -15,21 +11,6 @@ from inspy_logger.helpers import (
     determine_client_prog_name,
     determine_log_file_path
 )
-
-# Existing log record factory
-old_factory = logging.getLogRecordFactory()
-
-
-def record_factory(*args, **kwargs):
-    record = old_factory(*args, **kwargs)
-    # Set the file_name attribute to the name of the file where the log is called
-    frame = inspect.stack()[1]
-    record.file_name = frame.filename
-    return record
-
-
-logging.setLogRecordFactory(record_factory)
-
 
 from inspy_logger.engine import Logger
 from inspy_logger.helpers import get_existing_logger
@@ -59,6 +40,16 @@ CLIENT_PROG_NAME = determine_client_prog_name()
 INIT_LOG_LEVEL = determine_level(CLIENT_PROG_NAME)
 
 INTERACTIVE_SESSION = find_variable_in_call_stack('INSPY_INTERACTIVE_SESSION', default=False)
+
+
+class _NullLogger:
+    """No-op logger used when automatic startup is explicitly blocked."""
+
+    def __getattr__(self, _name):
+        return self
+
+    def __call__(self, *_args, **_kwargs):
+        return None
 
 
 def start_logger(override_block=True):
@@ -96,14 +87,14 @@ def start_logger(override_block=True):
 
         LOG_DEVICE.replay_and_setup_handlers()
     elif CLIENT_PROG_NAME:
-        prog_logger = Null()
+        prog_logger = _NullLogger()
 
     with contextlib.suppress(NameError):
         global PROG_LOGGER
 
         PROG_LOGGER = prog_logger
 
-        if isinstance(PROG_LOGGER, Null):
+        if isinstance(PROG_LOGGER, _NullLogger):
             from rich import print
             print("The logger has been blocked from starting. To start the logger, run `start_logger()`.")
 
