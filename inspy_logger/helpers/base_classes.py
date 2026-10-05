@@ -81,7 +81,9 @@ class Loggable:
         if self.__class__.class_logger is None:
             self.__class__.class_logger = self.__log_device
 
-        self.method_logger = self.__class__.method_logger.logger
+        # Do not assign self.method_logger here: it is a LoggableDescriptor,
+        # and an instance attribute would shadow it so per-method child
+                    # loggers never resolve.
 
     @property
     def log_device(self):
