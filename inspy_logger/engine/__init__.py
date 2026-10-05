@@ -737,7 +737,7 @@ class Logger(InspyLogger):
         Returns:
             None
         """
-        self._log(logging.ERROR, message, args=(), stacklevel=2, **kwargs)
+        self._log(logging.ERROR, message, args=args, stacklevel=stack_level, **kwargs)
 
     def __repr__(self):
         name = self.name
