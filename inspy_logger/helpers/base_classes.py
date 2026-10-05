@@ -31,7 +31,7 @@ class LoggableDescriptor:
         finally:
             del frame
 
-        raise RuntimeError("Could not determine the calling method name.")
+        return instance.log_device.logger
 
 
 def _get_parent_logging_device():
@@ -87,14 +87,6 @@ class Loggable:
         # Set up class-level logger if it's not already set
         if self.__class__.class_logger is None:
             self.__class__.class_logger = self.__log_device
-
-<<<<<<< Updated upstream
-        # Do not assign self.method_logger here: it is a LoggableDescriptor,
-        # and an instance attribute would shadow it so per-method child
-                    # loggers never resolve.
-
-=======
->>>>>>> Stashed changes
     @property
     def log_device(self):
         return self.__log_device

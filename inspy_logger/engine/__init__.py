@@ -2,6 +2,7 @@ import inspect
 import os
 import logging
 import sys
+from threading import RLock
 
 from time import time
 
@@ -36,6 +37,7 @@ class Logger(InspyLogger):
     INTERACTIVE_SESSION = INTERACTIVE_SESSION
 
     instances = {}  # A dictionary to hold instances of the Logger class.
+    _instances_lock = RLock()
 
     def __new__(cls, name, *args, **kwargs):
         """
@@ -50,11 +52,12 @@ class Logger(InspyLogger):
                 An instance of the Logger class.
         """
 
-        if name not in cls.instances:
-            instance = super(Logger, cls).__new__(cls)
-            cls.instances[name] = instance
-            return instance
-        return cls.instances[name]
+        with cls._instances_lock:
+            if name not in cls.instances:
+                instance = super(Logger, cls).__new__(cls)
+                cls.instances[name] = instance
+                return instance
+            return cls.instances[name]
 
     def __init__(
             self,
@@ -690,9 +693,6 @@ class Logger(InspyLogger):
         Returns:
             None
         """
-<<<<<<< Updated upstream
-        self._log(logging.ERROR, message, args=args, stacklevel=stack_level, **kwargs)
-=======
         self._count_call("error")
         self._log(
             logging.ERROR,
@@ -704,7 +704,6 @@ class Logger(InspyLogger):
 
     def _count_call(self, method_name):
         self.call_counts[method_name] = self.call_counts.get(method_name, 0) + 1
->>>>>>> Stashed changes
 
     def __repr__(self):
         name = self.name
