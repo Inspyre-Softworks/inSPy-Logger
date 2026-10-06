@@ -878,14 +878,14 @@ class Logger(InspyLogger):
         Low-level logging implementation, passing stacklevel to findCaller.
         """
         if self.logger.isEnabledFor(level):
-            self.logger._log(
+            self.logger.log(
                 level,
                 msg,
-                args,
-                exc_info,
-                extra,
-                stack_info,
-                stacklevel + 1,
+                *args,
+                exc_info=exc_info,
+                extra=extra,
+                stack_info=stack_info,
+                stacklevel=stacklevel + 1,
             )
 
     def __rich__(self):
