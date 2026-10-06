@@ -45,12 +45,6 @@ fmt_grp.add_argument('-J', '--json', action='store_true', help='Formats the debu
 
 fmt_grp.add_argument('-T', '--text', action='store_true', help='Formats the debug information in plain text.')
 
-# Parse the arguments
-parsed_args = parser.parse_args()
-
-# END PARSER SETUP
-
-if parsed_args.subcommand == 'update':
-    INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = parsed_args.pre_release
-else:
-    INCLUDE_PRE_RELEASE_FOR_UPDATE_CHECK = False
+def parse_args(args=None):
+    """Parse command-line arguments without doing work during import."""
+    return parser.parse_args(args)

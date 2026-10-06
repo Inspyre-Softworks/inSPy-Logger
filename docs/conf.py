@@ -8,12 +8,15 @@
 
 import os
 import sys
+from importlib.metadata import version as package_version
+
 sys.path.insert(0, os.path.abspath('../'))
 
 project = 'inspy-logger'
 copyright = '2023, Inspyre-Softworks, Taylor B.'
 author = 'Inspyre-Softworks'
-release = '3.1.0-dev1'
+release = package_version('inspy-logger')
+version = release
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -28,7 +31,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.argdoc',
     'autoclasstoc',
-    'sphinx_autodoc_annotation',
 ]
 autosummary_generate = True
 templates_path = ['_templates']
@@ -49,4 +51,3 @@ autodoc_default_options = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']

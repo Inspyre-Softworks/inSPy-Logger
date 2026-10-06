@@ -1,54 +1,109 @@
-# inSPy-Logger
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Inspyre-Softworks/inSPy-Logger/CI?label=CI&logo=github&logoColor=9cf&style=for-the-badge) 
-![Codacy grade](https://img.shields.io/codacy/grade/7171eec682c549a88dee0da9cc9b92b3?logo=codacy&logoColor=9cf&style=for-the-badge) 
-![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/Inspyre-Softworks/inSPy-Logger?color=9cf&include_prereleases&label=Pre-Release&logo=pypi&logoColor=9cf&style=for-the-badge) 
-![PyPI](https://img.shields.io/pypi/v/inspy-logger?color=9cf&label=Latest&logo=pypi&logoColor=9cf&style=for-the-badge) 
-![GitHub issues](https://img.shields.io/github/issues/Inspyre-Softworks/inSPy-Logger?color=9cf&logo=github&logoColor=9cf&style=for-the-badge) 
-![PyPI - Format](https://img.shields.io/pypi/format/inSPy-Logger?logo=PyPi&style=for-the-badge)
+# InspyLogger
+
+InspyLogger is a colorful, hierarchical logging library for Python CLI
+applications. It keeps the standard library's logging semantics while adding
+named singleton devices, child loggers, Rich console output, file output, and
+one-time warnings.
+
+Version 3.2.2 supports Python 3.10 and newer.
 
 ## Installation
 
-### Prerequisites:
-
-**Platform/Env**:
-  * **Python**: ^3.6.3
-  * **PIP**: (_If you want to install via PIP, that is_)
-  
-**inSPy-Logger Runtime Dependencies**:
-  I am providing this list of dependencies for transparency and for instances where one would not be able to install inSPy-Logger via PyPi's package manager. It is **highly** recommended you use `python3 -m pip install inspy_logger==<ver>` to install inSPy-Logger 2.0+
-  
-  * [colorlog](https://pypi.org/project/colorlog) (^4.2.1)
-  * [setuptools-autover](https://pypi.org/project/setuptools-autover) = (^1.0.2)
-  * [luddite](https://pypi.org/project/luddite) = (^1.0.1)
-  * [packaging](https://pypi.org/project/packaging) = (^20.4)
-
-### Installation via Pip on Python 3.6.3+ (recommended method):
-
-- `$> python3 -m pip install inspy_logger==<version>`
-
-#### Test out InspyLogger:
-
-```python3
-
-import inspy_logger
-
-# Set up a log device object. The first parameter is the root loggers name, and the second is the debug level
-log_device = inspy_logger.InspyLogger('LogName', 'debug')
-
-# Start a running log from that device
-log = log_device.start()
-
-# Output our own logger lines:
-log.debug('This is a debug log entry')
-log.info('This is an info log entry')
-log.warning('This is a warning log entry!')
-log.error('This is an error log entry!')
-log.exception('This is an exception log entry!')
-
+```console
+python -m pip install inspy-logger
 ```
 
-If you run the code above you'll get output similar to this:
+## Quick start
 
-![output1](https://github.com/Inspyre-Softworks/inSPy-Logger/blob/v2.0-alpha.6/examples/v2.0/output_screenies/v2.0.0a.6_screenie1.png)
+```python
+from inspy_logger import InspyLogger
 
-v2.0+ repository for inSPy-Logger
+log = InspyLogger(
+    "my-app",
+    console_level="info",
+    file_level="debug",
+    file_name="my-app.log",
+)
+
+log.debug("Written to the file, but hidden from the console")
+log.info("Started %s", "successfully")
+log.warning("Something may need attention")
+```
+
+`InspyLogger(name, ...)` returns the same logger device for repeated uses of a
+name. Log methods accept the same positional formatting arguments as
+`logging.Logger`.
+
+## Console-only logging
+
+```python
+log = InspyLogger(
+    "console-app",
+    console_level="warning",
+    no_file_logging=True,
+)
+```
+
+With `no_file_logging=True`, no file handler is installed and no log file is
+created.
+
+## Child loggers
+
+```python
+database_log = log.get_child("database")
+query_log = log.get_child("database.query")
+
+database_log.info("Connected")
+query_log.debug("Executing %s", statement)
+```
+
+Child retrieval is stable: requesting the same child name returns the same
+device and does not add duplicate handlers.
+
+## Logging-enabled classes
+
+```python
+from inspy_logger import Loggable
+
+
+class Worker(Loggable):
+    def run(self):
+        self.method_logger.info("Worker started")
+
+
+worker = Worker(parent_log_device=log)
+worker.run()
+```
+
+`method_logger` resolves to a child named for the calling method. It remains a
+descriptor, so each method gets the correct child rather than an instance
+attribute captured during initialization.
+
+## Levels and handlers
+
+Console and file levels are independent. The wrapped `logging.Logger` is kept
+at the lowest enabled handler level, so a configuration such as console
+`WARNING` plus file `DEBUG` works as expected.
+
+The supported named levels are `internal`, `debug`, `info`, `warning`, `error`,
+`critical`, and `fatal`. Integer levels from `logging` are also accepted.
+
+## Compatibility
+
+The v2 `start()` method remains available as a deprecated compatibility shim.
+New code should use the logger returned by `InspyLogger(...)` directly.
+
+## Development
+
+```console
+poetry install --with dev
+poetry run pytest
+poetry build
+```
+
+The contract suite covers identity, hierarchy, handler configuration,
+independent levels, caller attribution, `Loggable`, and `warn_once()`.
+
+## License
+
+InspyLogger is distributed under the MIT License. See `LICENSE.md`.
