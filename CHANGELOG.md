@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.4
+
+- Consolidated the maintained release line onto the default branch.
+- Added reliable interactive-session detection for standard Python, IPython,
+  Jupyter, and redirected streams.
+- Updated supported runtime, documentation, and development dependencies while
+  retaining Python 3.10 compatibility.
+- Refreshed project metadata and development instructions.
+
 ## 3.2.2
 
 - Prevented file handlers and file creation when `no_file_logging=True`.

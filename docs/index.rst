@@ -6,12 +6,13 @@
 Welcome to Inspy-Logger's documentation!
 ========================================
 
-.. autosummary::
-   :toctree: _autosummary
-   :template: custom-module-template.rst
-   :recursive:
+API reference
+-------------
 
-   inspy_logger
+.. automodule:: inspy_logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 
 Indices and tables

@@ -331,8 +331,19 @@ class Logger(InspyLogger):
         self._file_path = new
 
     @property
+    def is_interactive_session(self) -> bool:
+        return INTERACTIVE_SESSION
+
+    @property
     def interactive_session(self) -> bool:
-        return hasattr(sys, 'ps1') and sys.ps1
+        """Backward-compatible alias for :attr:`is_interactive_session`."""
+        warn(
+            "'interactive_session' is deprecated; use "
+            "'is_interactive_session' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.is_interactive_session
 
     def isEnabledFor(self, level):
         return self.logger.isEnabledFor(level)

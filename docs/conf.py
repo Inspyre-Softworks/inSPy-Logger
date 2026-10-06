@@ -13,7 +13,7 @@ from importlib.metadata import version as package_version
 sys.path.insert(0, os.path.abspath('../'))
 
 project = 'inspy-logger'
-copyright = '2023, Inspyre-Softworks, Taylor B.'
+copyright = '2023-2026, Inspyre-Softworks, Taylor B.'
 author = 'Inspyre-Softworks'
 release = package_version('inspy-logger')
 version = release
@@ -27,24 +27,9 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx_rtd_theme',
     'sphinx.ext.autosectionlabel',
-    'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.argdoc',
-    'autoclasstoc',
 ]
-autosummary_generate = True
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-autodoc_default_options = {
-    'members': True,
-    'special-members': True,
-    'undoc-members': True,
-    'inherited-members': True,
-    'exclude-members': '__weakref__',
-    'private-members': True,
-
-}
+exclude_patterns = ['_build', '_autosummary', 'Thumbs.db', '.DS_Store']
 
 
 # -- Options for HTML output -------------------------------------------------

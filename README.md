@@ -5,13 +5,15 @@ applications. It keeps the standard library's logging semantics while adding
 named singleton devices, child loggers, Rich console output, file output, and
 one-time warnings.
 
-Version 3.2.2 supports Python 3.10 and newer.
+Version 3.2.4 supports Python 3.10 and newer.
 
 ## Installation
 
 ```console
 python -m pip install inspy-logger
 ```
+
+To install this checkout for development, use `poetry install --with dev,docs`.
 
 ## Quick start
 
@@ -102,7 +104,8 @@ poetry build
 ```
 
 The contract suite covers identity, hierarchy, handler configuration,
-independent levels, caller attribution, `Loggable`, and `warn_once()`.
+independent levels, caller attribution, `Loggable`, `warn_once()`, and runtime
+environment detection.
 
 ## License
 
